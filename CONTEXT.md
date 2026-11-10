@@ -1,6 +1,6 @@
 # Frontend context
 
-**Phase:** production prototype. **Architecture:** approved v0.2. **Latest delivery:** real authentication and all feature APIs are connected; runtime mocks and mock mode are removed. Lint, typecheck, tests, production build, and scripted HTTP smoke checks pass. Flowbite's Tailwind plugin is configured and desktop screens were verified with headless Chrome; mobile visual QA remains unperformed.
+**Phase:** production prototype. **Architecture:** approved v0.2. **Latest delivery:** real authentication, all feature APIs, and a distinct product redesign are complete. Runtime mocks and mock mode are removed. Lint, typecheck, tests, production build, and scripted HTTP smoke checks pass. Desktop and key 390px screens were verified with headless Chrome.
 
 ## Current outcome
 
@@ -82,3 +82,12 @@ Next scoped task: T03 workflow review and contracts. Review the complete mock wo
 - **Limit:** mobile/responsive layouts and full click-through QA were not run. Desktop screens verified at 1440px with headless Chrome; the checks also cover rendering, routing, authentication, authorization boundaries, and representative mutations.
 - **UI setup:** after this delivery, Flowbite's Tailwind 4 plugin and generated `.flowbite-react/class-list.json` were configured in `globals.css`, and `ThemeInit` was mounted in the root layout. The earlier unconfigured setup produced unstyled Flowbite components; `color="success"` buttons were also corrected to `green`. Verify new pages visually after adding Flowbite components.
 - **Related backend:** endpoint shapes, seeds, and permissions are in `../backend/docs/EXECUTION.md`. Frontend and backend are independent Git repositories with separate commits.
+
+## Product redesign — 10 November 2026
+
+- **Design system:** warm bone canvas (`#f3f1e9`), forest-deep navigation, lime accent, coral errors, and warm neutral slate/emerald overrides in `globals.css`. Instrument Sans for UI, Instrument Serif for display headings, JetBrains Mono for labels and counts. Flowbite's green/primary/gray variables are mapped to the same palette.
+- **Shell:** dark 272px navigation rail with workspace card, lime active state, search trigger, account menu, and mobile drawer. Sticky top bar with breadcrumb, agency switcher, `⌘K`/`Ctrl+K` command palette that filters workspace pages and navigates on select.
+- **Dashboards:** candidate, staff, and platform screens rebuilt around a dark “next action” panel, metric strip, pipeline columns, profile/team panels, and activity timelines. Loading uses page skeletons; errors use an explicit retry surface.
+- **Screens:** login, register, demo chooser, marketing home, and all workspace pages share the same typography, surfaces, badges, buttons, and motion. Marketing includes a live HTML product preview.
+- **Verified visually:** headless Chrome at 1440px for login, demo, marketing, candidate overview/onboarding/profile/jobs/applications, staff overview/candidates/team/jobs/applications, platform overview, and the command palette; 390px for login and candidate overview. Mobile drawer, demo cards, and palette checked.
+- **Checks:** `pnpm lint`, `pnpm typecheck`, `pnpm test` (4 passing), and `pnpm build` pass after the redesign. Manual end-to-end flows are documented in `../backend/docs/MANUAL_TESTING.md`.

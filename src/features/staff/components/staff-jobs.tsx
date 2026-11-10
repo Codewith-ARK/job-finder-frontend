@@ -231,7 +231,7 @@ export function StaffJobs() {
                     </span>
                   </TableCell>
                   <TableCell>
-                    <Badge tone={job.status === "open" ? "accent" : "neutral"}>
+                    <Badge tone={job.status === "open" ? "info" : "neutral"}>
                       {job.status === "open" ? "Open" : "Closed"}
                     </Badge>
                   </TableCell>
@@ -252,7 +252,7 @@ export function StaffJobs() {
                         </Button>
                         <Button
                           size="xs"
-                          color={job.status === "open" ? "failure" : "success"}
+                          color={job.status === "open" ? "red" : "green"}
                           outline
                           onClick={() => toggleStatus(job)}
                           disabled={mutation.isPending}

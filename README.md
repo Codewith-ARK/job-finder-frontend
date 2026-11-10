@@ -57,6 +57,6 @@ Verified on 10 November 2026 against a seeded SQLite-backed API:
 
 - `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build` pass.
 - A scripted HTTP smoke test passed 20/20 checks against the production `next start` server on port 3100, proxying to FastAPI: health, demo login for candidate/supervisor/platform, session resolution and clearing, candidate workspace and profile update, jobs workspace and apply, wrong-workspace denial, staff and platform workspace loads, and HTTP 200 for every main route.
-- Headless Chrome screenshots at 1440px confirmed the login, candidate dashboard, onboarding, staff dashboard, job board, team directory, and platform overview render correctly. Mobile/responsive layouts and full click-through QA were not run.
+- Headless Chrome screenshots confirmed the login, demo, marketing, candidate, staff, and platform screens at 1440px, plus login and candidate overview at 390px. The `⌘K` palette and mobile drawer were checked. Full click-through QA for every page remains manual.
 
-See [agent rules](AGENTS.md), [architecture](../backend/docs/ARCHITECTURE.md), [execution contract](../backend/docs/EXECUTION.md), and [task plan](../backend/docs/PLAN.md).
+See [agent rules](AGENTS.md), [architecture](../backend/docs/ARCHITECTURE.md), [execution contract](../backend/docs/EXECUTION.md), [task plan](../backend/docs/PLAN.md), and the [manual testing guide](../backend/docs/MANUAL_TESTING.md).

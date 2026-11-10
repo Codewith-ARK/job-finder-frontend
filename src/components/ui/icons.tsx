@@ -146,3 +146,89 @@ export function IconKey(props: IconProps) {
     </Svg>
   );
 }
+
+export function IconSearch(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m16 16 4.5 4.5" />
+    </Svg>
+  );
+}
+
+export function IconBell(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M6 9a6 6 0 0 1 12 0c0 4 1.5 5.5 2 6H4c.5-.5 2-2 2-6Z" />
+      <path d="M10 19a2 2 0 0 0 4 0" />
+    </Svg>
+  );
+}
+
+export function IconArrowUpRight(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M7 17 17 7M8 7h9v9" />
+    </Svg>
+  );
+}
+
+export function IconArrowRight(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4 12h16M14 6l6 6-6 6" />
+    </Svg>
+  );
+}
+
+export function IconClock(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.5V12l3 2" />
+    </Svg>
+  );
+}
+
+export function IconCheck(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="m5 12.5 4 4L19 6.5" />
+    </Svg>
+  );
+}
+
+export function IconSparkle(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M12 3.5c.6 4.2 2.3 5.9 6.5 6.5-4.2.6-5.9 2.3-6.5 6.5-.6-4.2-2.3-5.9-6.5-6.5 4.2-.6 5.9-2.3 6.5-6.5Z" />
+      <path d="M18.5 16.5c.25 1.75.95 2.45 2.7 2.7-1.75.25-2.45.95-2.7 2.7-.25-1.75-.95-2.45-2.7-2.7 1.75-.25 2.45-.95 2.7-2.7Z" />
+    </Svg>
+  );
+}
+
+export function IconMapPin(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </Svg>
+  );
+}
+
+export function IconFilter(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4 6h16M7 12h10M10 18h4" />
+    </Svg>
+  );
+}
+
+export function IconCalendar(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="4" y="5" width="16" height="15" rx="2" />
+      <path d="M8 3v4M16 3v4M4 10h16" />
+    </Svg>
+  );
+}

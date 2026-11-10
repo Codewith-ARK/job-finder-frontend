@@ -3,12 +3,92 @@
 @source "../../.flowbite-react/class-list.json";
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans:
+    var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  --font-mono:
+    var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
+
+  --color-canvas: #f3f1e9;
+  --color-surface: #fffdf8;
+  --color-ink: #0e211a;
+  --color-muted: #66716b;
+  --color-line: #e0ddd1;
+  --color-forest: #0b5a46;
+  --color-forest-deep: #072e25;
+  --color-lime: #d8f36c;
+  --color-amber: #efc05a;
+  --color-coral: #d75f45;
+
+  /* Warm neutrals replace Tailwind's cool slate everywhere. */
+  --color-slate-50: #f7f5ee;
+  --color-slate-100: #efede4;
+  --color-slate-200: #e2dfd3;
+  --color-slate-300: #cfcaba;
+  --color-slate-400: #a6a192;
+  --color-slate-500: #7b776a;
+  --color-slate-600: #605d53;
+  --color-slate-700: #48463e;
+  --color-slate-800: #2c2b26;
+  --color-slate-900: #171712;
+  --color-slate-950: #0c0c09;
+
+  /* Emerald becomes the product's forest green. */
+  --color-emerald-50: #e9f3ee;
+  --color-emerald-100: #d9ebe2;
+  --color-emerald-200: #b5d8c9;
+  --color-emerald-300: #86bfa9;
+  --color-emerald-400: #4e9f83;
+  --color-emerald-500: #22815f;
+  --color-emerald-600: #0f6a4f;
+  --color-emerald-700: #0b5a46;
+  --color-emerald-800: #094938;
+  --color-emerald-900: #083a2d;
+  --color-emerald-950: #04251c;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.9rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
 }
 
+/* Flowbite's palette is driven by its own variables. Keep them in the product palette. */
 :root {
   color-scheme: light;
+
+  --gray-50: #f7f5ee;
+  --gray-100: #efede4;
+  --gray-200: #e2dfd3;
+  --gray-300: #cfcaba;
+  --gray-400: #a6a192;
+  --gray-500: #7b776a;
+  --gray-600: #605d53;
+  --gray-700: #48463e;
+  --gray-800: #2c2b26;
+  --gray-900: #171712;
+
+  --green-50: #eef6f1;
+  --green-100: #dcefe6;
+  --green-200: #bfe2d3;
+  --green-300: #94cdb7;
+  --green-400: #5cae90;
+  --green-500: #2f8d6f;
+  --green-600: #147357;
+  --green-700: #0b5a46;
+  --green-800: #094938;
+  --green-900: #06382b;
+
+  --primary-50: #eef6f1;
+  --primary-100: #dcefe6;
+  --primary-200: #bfe2d3;
+  --primary-300: #94cdb7;
+  --primary-400: #5cae90;
+  --primary-500: #2f8d6f;
+  --primary-600: #147357;
+  --primary-700: #0b5a46;
+  --primary-800: #094938;
+  --primary-900: #06382b;
 }
 
 * {
@@ -21,10 +101,12 @@ html {
 
 body {
   margin: 0;
-  background: #f8fafc;
-  color: #0f172a;
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family:
+    var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 h1,
@@ -48,8 +130,13 @@ a {
 }
 
 :focus-visible {
-  outline: 2px solid #059669;
+  outline: 2px solid var(--color-forest);
   outline-offset: 2px;
+}
+
+::selection {
+  background: var(--color-lime);
+  color: var(--color-forest-deep);
 }
 
 .skip-link {
@@ -57,8 +144,8 @@ a {
   left: 16px;
   top: -80px;
   z-index: 100;
-  border-radius: 8px;
-  background: #0f172a;
+  border-radius: 10px;
+  background: var(--color-forest-deep);
   color: #fff;
   padding: 10px 18px;
   font-size: 14px;
@@ -68,15 +155,92 @@ a {
   top: 12px;
 }
 
-::selection {
-  background: #a7f3d0;
-  color: #064e3b;
-}
-
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 1000px #fff inset;
-  -webkit-text-fill-color: #0f172a;
+  -webkit-box-shadow: 0 0 0 1000px var(--color-surface) inset;
+  -webkit-text-fill-color: var(--color-ink);
   transition: background-color 5000s ease-in-out 0s;
+}
+
+@layer components {
+  .eyebrow {
+    font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-emerald-700);
+  }
+
+  .panel {
+    border: 1px solid var(--color-slate-200);
+    border-radius: var(--radius-xl);
+    background: var(--color-surface);
+    box-shadow: 0 1px 2px rgb(14 33 26 / 0.04);
+  }
+
+  .panel-hover {
+    transition:
+      transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 180ms ease;
+  }
+
+  .panel-hover:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-slate-300);
+    box-shadow: 0 14px 30px -18px rgb(14 33 26 / 0.24);
+  }
+
+  .metric-value {
+    font-variant-numeric: tabular-nums lining-nums;
+    letter-spacing: -0.04em;
+  }
+
+  .display-title {
+    font-family: var(--font-instrument-serif), ui-serif, Georgia, serif;
+    font-weight: 400;
+    letter-spacing: -0.025em;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  button {
+    transition:
+      background-color 160ms ease,
+      border-color 160ms ease,
+      color 160ms ease,
+      transform 160ms ease;
+  }
+
+  button:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  .enter {
+    animation: enter 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .enter-delayed {
+    animation: enter 560ms cubic-bezier(0.22, 1, 0.36, 1) 90ms both;
+  }
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enter,
+  .enter-delayed {
+    animation: none;
+  }
 }

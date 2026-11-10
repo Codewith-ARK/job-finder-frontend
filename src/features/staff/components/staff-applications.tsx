@@ -19,10 +19,7 @@ import { Feedback } from "@/components/ui/feedback";
 import { PageHeader } from "@/components/ui/page-header";
 import { formatRelative } from "@/lib/format";
 import { apiErrorMessage } from "@/lib/http.client";
-import {
-  ApplicationStatusBadge,
-  applicationStatusOptions,
-} from "../../jobs/components/application-status";
+import { applicationStatusOptions } from "../../jobs/components/application-status";
 import { useJobsMutation, useJobsWorkspace } from "../../jobs/jobs.hooks";
 import type { ApplicationStatus } from "../../jobs/jobs.types";
 
@@ -180,9 +177,6 @@ export function StaffApplications() {
                             </option>
                           ))}
                         </Select>
-                      </div>
-                      <div className="mt-1">
-                        <ApplicationStatusBadge status={application.status} />
                       </div>
                     </TableCell>
                     <TableCell>

@@ -214,7 +214,7 @@ export function StaffTeam() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge tone={member.active ? "accent" : "danger"}>
+                      <Badge tone={member.active ? "info" : "danger"}>
                         {member.active ? "Active" : "Deactivated"}
                       </Badge>
                     </TableCell>
@@ -222,7 +222,7 @@ export function StaffTeam() {
                       <TableCell>
                         <Button
                           size="xs"
-                          color={member.active ? "failure" : "success"}
+                          color={member.active ? "red" : "green"}
                           outline
                           onClick={() => toggle(member.id, !member.active)}
                           disabled={self || mutation.isPending}
