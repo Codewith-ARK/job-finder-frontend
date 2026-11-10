@@ -1,35 +1,40 @@
-import type { Session } from "../auth/auth.types.ts";
+export interface PlatformStats {
+  agencies: number;
+  users: number;
+  integrations: number;
+  health: string;
+}
 
-export type PlatformTab = "overview" | "agencies" | "integrations" | "audit";
+export type AgencyStatus = "active" | "pending" | "suspended";
+
+export interface PlatformAgency {
+  id: string;
+  name: string;
+  region: string;
+  users: number;
+  status: AgencyStatus;
+  integrations: string;
+}
+
+export interface PlatformIntegration {
+  id: string;
+  name: string;
+  type: string;
+  status: "connected" | "syncing" | "error" | "disconnected";
+  lastSync: string;
+}
+
+export interface PlatformAudit {
+  id: string;
+  event: string;
+  detail: string;
+  actor: string;
+  createdAt: string;
+}
 
 export interface PlatformData {
-  session: Pick<Session, "user" | "agency">;
-  stats: {
-    agencies: number;
-    users: number;
-    integrations: number;
-    health: string;
-  };
-  agencies: {
-    id: string;
-    name: string;
-    region: string;
-    users: number;
-    status: "active" | "pending" | "suspended";
-    integrations: string;
-  }[];
-  integrations: {
-    id: string;
-    name: string;
-    type: string;
-    status: "connected" | "syncing" | "error" | "disconnected";
-    lastSync: string;
-  }[];
-  audit: {
-    id: string;
-    event: string;
-    detail: string;
-    actor: string;
-    age: string;
-  }[];
+  stats: PlatformStats;
+  agencies: PlatformAgency[];
+  integrations: PlatformIntegration[];
+  audit: PlatformAudit[];
 }

@@ -5,6 +5,7 @@ import {
   Button,
   Card,
   Badge as FlowbiteBadge,
+  Select,
   Table,
   TableBody,
   TableCell,
@@ -15,236 +16,319 @@ import {
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Feedback } from "@/components/ui/feedback";
-import { usePlatformWorkspace } from "../platform.hooks.ts";
-import type { PlatformTab } from "../platform.types.ts";
+import {
+  IconBuilding,
+  IconLayers,
+  IconPlug,
+  IconShield,
+  IconUsers,
+} from "@/components/ui/icons";
+import { PageHeader } from "@/components/ui/page-header";
+import { StatCard } from "@/components/ui/stat-card";
+import { formatRelative } from "@/lib/format";
+import { apiErrorMessage } from "@/lib/http.client";
+import { usePlatformMutation, usePlatformWorkspace } from "../platform.hooks";
+import type { AgencyStatus, PlatformIntegration } from "../platform.types";
+
+const tabs = ["overview", "agencies", "integrations", "audit"] as const;
+type Tab = (typeof tabs)[number];
+
+const agencyTone: Record<string, "accent" | "warning" | "danger"> = {
+  active: "accent",
+  pending: "warning",
+  suspended: "danger",
+};
+
+const integrationTone: Record<
+  PlatformIntegration["status"],
+  "accent" | "warning" | "danger" | "neutral"
+> = {
+  connected: "accent",
+  syncing: "warning",
+  error: "danger",
+  disconnected: "neutral",
+};
 
 export function PlatformWorkspace() {
   const workspace = usePlatformWorkspace();
-  const [tab, setTab] = useState<PlatformTab>("overview");
-  if (workspace.isPending)
+  const mutation = usePlatformMutation();
+  const [tab, setTab] = useState<Tab>("overview");
+  const [error, setError] = useState<string>();
+
+  if (workspace.isPending) {
     return (
-      <Feedback kind="loading" title="Loading platform overview">
-        Agency, integration, and audit records are loading.
+      <Feedback kind="loading" title="Loading the platform">
+        Fetching agencies, integrations, and audit history.
       </Feedback>
     );
-  if (workspace.isError)
+  }
+
+  if (workspace.isError) {
     return (
       <Feedback
         kind="error"
-        title="We couldn't load the platform overview"
-        action={
-          <Button color="dark" onClick={() => workspace.refetch()}>
-            Try again
-          </Button>
-        }
+        title="We could not load the platform overview"
+        action={<Button onClick={() => workspace.refetch()}>Try again</Button>}
       >
-        {workspace.error.message}
+        {apiErrorMessage(workspace.error)}
       </Feedback>
     );
-  if (!workspace.data)
-    return (
-      <Feedback title="Choose the platform perspective">
-        Return to the perspective chooser to open platform administration.
-      </Feedback>
-    );
+  }
+
   const data = workspace.data;
+  const failing = data.integrations.filter((item) => item.status === "error");
+
+  function setAgencyStatus(agencyId: string, status: AgencyStatus) {
+    setError(undefined);
+    mutation.mutate(
+      { agencyId, status },
+      { onError: (cause) => setError(apiErrorMessage(cause)) },
+    );
+  }
+
   return (
-    <div className="platform-workspace">
-      <section className="staff-heading">
-        <div>
-          <p className="eyebrow">PLATFORM ADMINISTRATION</p>
-          <h1>Platform overview</h1>
-          <p>
-            Monitor agencies, users, integrations, and recent activity from one
-            place.
-          </p>
-        </div>
-        <Badge tone="accent">{data.stats.health}</Badge>
-      </section>
-      <nav className="staff-tabs" aria-label="Platform sections">
-        {(["overview", "agencies", "integrations", "audit"] as const).map(
-          (item) => (
-            <Button color="light" key={item} onClick={() => setTab(item)}>
-              {item[0].toUpperCase() + item.slice(1)}
-            </Button>
-          ),
-        )}
-      </nav>
-      {tab === "overview" && (
-        <>
-          <div className="staff-stat-grid">
-            {[
-              ["Agencies", data.stats.agencies],
-              ["Users", data.stats.users],
-              ["Integrations", data.stats.integrations],
-              ["System health", data.stats.health],
-            ].map(([label, value]) => (
-              <Card key={label}>
-                <p className="staff-stat-label">{label}</p>
-                <strong className="staff-stat-value">{value}</strong>
-                <span className="staff-stat-change">
-                  Healthy platform signal
-                </span>
-              </Card>
-            ))}
-          </div>
-          <div className="staff-overview-grid">
-            <Card>
-              <div className="staff-card-heading">
-                <div>
-                  <p className="eyebrow">SYSTEM HEALTH</p>
-                  <h2>All services operational</h2>
-                </div>
-                <Badge tone="accent">99.9% uptime</Badge>
-              </div>
-              {[
-                "Core platform",
-                "API services",
-                "Background jobs",
-                "Database",
-                "File storage",
-              ].map((service) => (
-                <div className="activity-row" key={service}>
-                  <span className="activity-dot activity-success" />
-                  <span>
-                    <strong>{service}</strong>
-                    <small>Operational</small>
-                  </span>
-                  <FlowbiteBadge color="success">Operational</FlowbiteBadge>
-                </div>
-              ))}
-            </Card>
-            <Card>
-              <div className="staff-card-heading">
-                <div>
-                  <p className="eyebrow">INTEGRATION STATUS</p>
-                  <h2>Connected services</h2>
-                </div>
-                <Badge>{data.integrations.length} tracked</Badge>
-              </div>
-              {data.integrations.map((item) => (
-                <div className="activity-row" key={item.id}>
-                  <span
-                    className={`activity-dot activity-${item.status === "error" ? "warning" : item.status === "connected" ? "success" : "info"}`}
-                  />
-                  <span>
-                    <strong>{item.name}</strong>
-                    <small>
-                      {item.type} · {item.lastSync}
-                    </small>
-                  </span>
-                  <Badge
-                    tone={item.status === "connected" ? "accent" : "warning"}
-                  >
-                    {item.status}
-                  </Badge>
-                </div>
-              ))}
-            </Card>
-          </div>
-        </>
+    <div className="space-y-8">
+      <PageHeader
+        eyebrow="Platform administration"
+        title="Platform overview"
+        description="A read-mostly view of agencies and simulated integrations. Platform administrators have no agency workspace."
+      />
+
+      {error && (
+        <Alert color="failure" role="alert">
+          {error}
+        </Alert>
       )}
-      {tab === "agencies" && (
-        <Card>
-          <div className="staff-card-heading">
-            <div>
-              <p className="eyebrow">AGENCY DIRECTORY</p>
-              <h2>Manage agencies</h2>
-            </div>
-            <Button color="dark">Add agency</Button>
+
+      <div className="flex gap-1 overflow-x-auto rounded-lg border border-slate-200 bg-white p-1">
+        {tabs.map((item) => (
+          <button
+            key={item}
+            type="button"
+            onClick={() => setTab(item)}
+            className={`rounded-md px-4 py-2 text-sm font-medium capitalize transition-colors ${
+              tab === item
+                ? "bg-slate-900 text-white"
+                : "text-slate-600 hover:bg-slate-100"
+            }`}
+            aria-current={tab === item ? "page" : undefined}
+          >
+            {item}
+          </button>
+        ))}
+      </div>
+
+      {tab === "overview" && (
+        <div className="space-y-6">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatCard
+              label="Agencies"
+              value={data.stats.agencies}
+              hint="Across every region"
+              icon={<IconBuilding />}
+            />
+            <StatCard
+              label="Users"
+              value={data.stats.users}
+              hint="All accounts in the platform"
+              icon={<IconUsers />}
+            />
+            <StatCard
+              label="Integrations"
+              value={data.stats.integrations}
+              hint={`${failing.length} reporting an error`}
+              icon={<IconPlug />}
+            />
+            <StatCard
+              label="Platform health"
+              value={data.stats.health}
+              hint="Derived from integration status"
+              icon={<IconShield />}
+            />
           </div>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card>
+              <h2 className="text-base font-semibold text-slate-900">
+                Integration status
+              </h2>
+              <ul className="mt-4 space-y-3">
+                {data.integrations.map((integration) => (
+                  <li
+                    key={integration.id}
+                    className="flex items-center justify-between gap-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-slate-900">
+                        {integration.name}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {integration.type} · {integration.lastSync}
+                      </p>
+                    </div>
+                    <Badge tone={integrationTone[integration.status]}>
+                      {integration.status}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+
+            <Card>
+              <h2 className="text-base font-semibold text-slate-900">
+                Recent audit events
+              </h2>
+              <ul className="mt-4 space-y-3">
+                {data.audit.slice(0, 5).map((event) => (
+                  <li key={event.id} className="flex gap-3">
+                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-slate-300" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-slate-900">
+                        {event.event}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {event.actor} · {formatRelative(event.createdAt)}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {tab === "agencies" && (
+        <Card className="overflow-x-auto p-0">
           <Table hoverable>
             <TableHead>
-              <TableHeadCell>Agency</TableHeadCell>
-              <TableHeadCell>Region</TableHeadCell>
-              <TableHeadCell>Users</TableHeadCell>
-              <TableHeadCell>Status</TableHeadCell>
-              <TableHeadCell>Integrations</TableHeadCell>
+              <TableRow>
+                <TableHeadCell>Agency</TableHeadCell>
+                <TableHeadCell>Region</TableHeadCell>
+                <TableHeadCell>Users</TableHeadCell>
+                <TableHeadCell>Integrations</TableHeadCell>
+                <TableHeadCell>Status</TableHeadCell>
+                <TableHeadCell>Change status</TableHeadCell>
+              </TableRow>
             </TableHead>
-            <TableBody>
+            <TableBody className="divide-y">
               {data.agencies.map((agency) => (
                 <TableRow key={agency.id}>
                   <TableCell>
-                    <strong>{agency.name}</strong>
+                    <p className="font-medium text-slate-900">{agency.name}</p>
                   </TableCell>
-                  <TableCell>{agency.region}</TableCell>
-                  <TableCell>{agency.users}</TableCell>
                   <TableCell>
-                    <Badge
-                      tone={agency.status === "active" ? "accent" : "warning"}
-                    >
+                    <span className="text-sm text-slate-700">
+                      {agency.region}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-slate-700">
+                      {agency.users}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-slate-700">
+                      {agency.integrations}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <Badge tone={agencyTone[agency.status] ?? "neutral"}>
                       {agency.status}
                     </Badge>
                   </TableCell>
-                  <TableCell>{agency.integrations}</TableCell>
+                  <TableCell>
+                    <Select
+                      sizing="sm"
+                      value={agency.status}
+                      onChange={(event) =>
+                        setAgencyStatus(
+                          agency.id,
+                          event.target.value as AgencyStatus,
+                        )
+                      }
+                      disabled={mutation.isPending}
+                      aria-label={`Status for ${agency.name}`}
+                    >
+                      <option value="active">Active</option>
+                      <option value="pending">Pending</option>
+                      <option value="suspended">Suspended</option>
+                    </Select>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </Card>
       )}
+
       {tab === "integrations" && (
-        <Card>
-          <div className="staff-card-heading">
-            <div>
-              <p className="eyebrow">INTEGRATIONS</p>
-              <h2>Connected services</h2>
-            </div>
-            <Button color="dark">Add integration</Button>
-          </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {data.integrations.map((integration) => (
+            <Card key={integration.id}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-600">
+                    <IconLayers className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <h2 className="text-sm font-semibold text-slate-900">
+                      {integration.name}
+                    </h2>
+                    <p className="text-xs text-slate-500">{integration.type}</p>
+                  </div>
+                </div>
+                <Badge tone={integrationTone[integration.status]}>
+                  {integration.status}
+                </Badge>
+              </div>
+              <p className="mt-4 text-xs text-slate-500">
+                Last sync: {integration.lastSync} ·{" "}
+                <FlowbiteBadge color="gray" className="ml-1">
+                  Simulated
+                </FlowbiteBadge>
+              </p>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {tab === "audit" && (
+        <Card className="overflow-x-auto p-0">
           <Table hoverable>
             <TableHead>
-              <TableHeadCell>Integration</TableHeadCell>
-              <TableHeadCell>Type</TableHeadCell>
-              <TableHeadCell>Status</TableHeadCell>
-              <TableHeadCell>Last sync</TableHeadCell>
+              <TableRow>
+                <TableHeadCell>Event</TableHeadCell>
+                <TableHeadCell>Detail</TableHeadCell>
+                <TableHeadCell>Actor</TableHeadCell>
+                <TableHeadCell>Time</TableHeadCell>
+              </TableRow>
             </TableHead>
-            <TableBody>
-              {data.integrations.map((item) => (
-                <TableRow key={item.id}>
+            <TableBody className="divide-y">
+              {data.audit.map((event) => (
+                <TableRow key={event.id}>
                   <TableCell>
-                    <strong>{item.name}</strong>
+                    <p className="font-medium text-slate-900">{event.event}</p>
                   </TableCell>
-                  <TableCell>{item.type}</TableCell>
                   <TableCell>
-                    <Badge
-                      tone={item.status === "connected" ? "accent" : "warning"}
-                    >
-                      {item.status}
-                    </Badge>
+                    <span className="text-sm text-slate-700">
+                      {event.detail}
+                    </span>
                   </TableCell>
-                  <TableCell>{item.lastSync}</TableCell>
+                  <TableCell>
+                    <span className="text-sm text-slate-700">
+                      {event.actor}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="whitespace-nowrap text-sm text-slate-600">
+                      {formatRelative(event.createdAt)}
+                    </span>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </Card>
-      )}
-      {tab === "audit" && (
-        <Card>
-          <div className="staff-card-heading">
-            <div>
-              <p className="eyebrow">AUDIT ACTIVITY</p>
-              <h2>Recent platform events</h2>
-            </div>
-            <Button color="light">Export</Button>
-          </div>
-          {data.audit.map((item) => (
-            <div className="activity-row" key={item.id}>
-              <span className="activity-dot activity-info" />
-              <span>
-                <strong>{item.event}</strong>
-                <small>
-                  {item.detail} · {item.actor}
-                </small>
-              </span>
-              <time>{item.age}</time>
-            </div>
-          ))}
-          <Alert color="info">
-            Audit and reporting screens are mock previews until platform APIs
-            are connected.
-          </Alert>
         </Card>
       )}
     </div>

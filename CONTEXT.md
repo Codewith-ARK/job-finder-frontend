@@ -1,6 +1,6 @@
 # Frontend context
 
-**Phase:** UI-first. **Architecture:** approved v0.2. **Latest task:** T02.4 Phase 1 mock UI milestone completed; types, focused tests, build, and route checks pass. Repository lint still reports a pre-existing unrelated `src/app/(demo-flow)/v1/page.tsx` formatting/import issue. Browser interaction/visual review remains pending.
+**Phase:** production prototype. **Architecture:** approved v0.2. **Latest delivery:** real authentication and all feature APIs are connected; runtime mocks and mock mode are removed. Lint, typecheck, tests, production build, and scripted HTTP smoke checks pass. Pixel-level browser visual QA remains unperformed.
 
 ## Current outcome
 
@@ -69,3 +69,15 @@ Next scoped task: T03 workflow review and contracts. Review the complete mock wo
 - `src/features/platform/` owns the platform preview contract and mock adapter. `/platform` now shows overview, agency directory, integration status, and audit activity tabs. External services remain explicitly simulated.
 - Verified: focused Biome checks, `pnpm typecheck`, `pnpm test` (13 passing results), `pnpm build`, and HTTP 200 responses for `/`, `/demo`, `/candidate`, `/candidate/jobs`, `/candidate/applications`, `/staff`, `/staff/applications`, and `/platform`.
 - Full `pnpm lint` remains blocked by the unrelated pre-existing `src/app/(demo-flow)/v1/page.tsx` formatting/import issue. Browser visual/mobile and click-through review remains pending because the browser-access host is unavailable.
+
+## T03–T06 implementation and validation
+
+- **Account:** `/login`, `/register`, and `/demo` perform real FastAPI authentication. The demo chooser lists seeded personas and signs in through `/api/auth/demo-login`; it is not a mock role switcher. The app shell supports logout, password change, and agency switching for multi-agency users. Route guards are navigation-only and never replace backend authorization.
+- **Session handling:** Axios uses cookies, reads the `jf_csrf` cookie into `X-CSRF-Token` for state changes, normalizes FastAPI `detail` errors, and sends unauthenticated authenticated-page 401s to `/login`. React Query keys are scoped by user, agency, and role; logout and agency changes clear private caches.
+- **Features connected:** candidate dashboard/profile/onboarding/documents/jobs/applications; staff dashboard/candidates/team/jobs/applications; platform overview/agencies/integrations/audit. All runtime mocks, mock adapters, mock state, `mock-mode.ts`, the demo-flow preview route, and `dev:mock` were removed. There is no fallback to mocks on API failure.
+- **UI:** a shared Flowbite-based shell with role-aware sidebar/topbar, responsive drawer, `ActionButton`, `LinkButton`, `Badge`, `Feedback`, `PageHeader`, `StatCard`, and `EmptyState`. Flowbite React `0.12.17` API differences were handled with local primitives rather than version changes.
+- **Proxy:** `next.config.ts` rewrites `/api/:path*` to `${API_ORIGIN}/api/:path*`, default `http://127.0.0.1:8000`.
+- **Verified:** `pnpm lint`, `pnpm typecheck`, `pnpm test` (4 passing), and `pnpm build` (18 static/dynamic routes) pass. `pnpm lint` is now clean; the former demo-flow lint blocker was deleted with the mocks.
+- **HTTP smoke:** 20/20 checks against the production `next start` server (port 3100) proxying to FastAPI — health, candidate/supervisor/platform demo login, session resolution and clearing after logout, candidate workspace and profile update, jobs workspace and application, staff/platform workspace loads, wrong-workspace 403s, and HTTP 200 for `/`, `/login`, `/demo`, `/register`, `/candidate`, `/staff`, and `/platform`.
+- **Limit:** pixel-level visual, responsive, and click-through browser QA was not run. The checks cover rendering, routing, authentication, authorization boundaries, and representative mutations, not visual polish.
+- **Related backend:** endpoint shapes, seeds, and permissions are in `../backend/docs/EXECUTION.md`. Frontend and backend are independent Git repositories with separate commits.

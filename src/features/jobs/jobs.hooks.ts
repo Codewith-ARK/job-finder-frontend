@@ -1,56 +1,62 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { isMockMode } from "../../lib/mock-mode.ts";
 import { useSession } from "../auth/auth.hooks.ts";
-import type { Session } from "../auth/auth.types.ts";
+import { staffKeys } from "../staff/staff.keys.ts";
 import {
   applyToJob,
+  createJob,
   getJobsWorkspace,
   updateApplicationStatus,
+  updateJob,
 } from "./jobs.api.ts";
 import { jobsKeys } from "./jobs.keys.ts";
-import type { ApplicationStatus } from "./jobs.types.ts";
+import type {
+  ApplicationStatus,
+  JobInput,
+  JobPatch,
+  JobsWorkspaceData,
+} from "./jobs.types.ts";
+
+export type JobsAction =
+  | { type: "apply"; jobId: string }
+  | { type: "create"; payload: JobInput }
+  | { type: "update-job"; jobId: string; patch: JobPatch }
+  | { type: "status"; applicationId: string; status: ApplicationStatus };
 
 export function useJobsWorkspace() {
   const { data: session } = useSession();
   return useQuery({
-    queryKey: jobsKeys.workspace(session),
-    queryFn: ({ signal }) => {
-      if (!session) throw new Error("Choose a perspective first.");
-      return getJobsWorkspace(session, signal);
-    },
+    queryKey: jobsKeys.workspace(session ?? null),
+    queryFn: ({ signal }) => getJobsWorkspace(signal),
     enabled:
-      isMockMode() &&
-      !!session &&
-      ["candidate", "staff"].includes(session.user.workspace),
-    staleTime: 30_000,
+      session?.user.workspace === "candidate" ||
+      session?.user.workspace === "staff",
+    staleTime: 20_000,
   });
+}
+
+function runJobsAction(action: JobsAction): Promise<JobsWorkspaceData> {
+  switch (action.type) {
+    case "apply":
+      return applyToJob(action.jobId);
+    case "create":
+      return createJob(action.payload);
+    case "update-job":
+      return updateJob(action.jobId, action.patch);
+    case "status":
+      return updateApplicationStatus(action.applicationId, action.status);
+  }
 }
 
 export function useJobsMutation() {
   const client = useQueryClient();
+  const { data: session } = useSession();
   return useMutation({
-    mutationKey: ["jobs-workspace-change"],
-    scope: { id: "jobs-workspace" },
-    mutationFn: async (
-      change:
-        | { type: "apply"; session: Session; jobId: string }
-        | {
-            type: "status";
-            session: Session;
-            applicationId: string;
-            status: ApplicationStatus;
-          },
-    ) =>
-      change.type === "apply"
-        ? applyToJob(change.session, change.jobId)
-        : updateApplicationStatus(
-            change.session,
-            change.applicationId,
-            change.status,
-          ),
-    onSuccess: (data) =>
-      client.setQueryData(jobsKeys.workspace(data.session), data),
+    mutationFn: runJobsAction,
+    onSuccess: async (data) => {
+      client.setQueryData(jobsKeys.workspace(session ?? null), data);
+      await client.invalidateQueries({ queryKey: staffKeys.all });
+    },
   });
 }

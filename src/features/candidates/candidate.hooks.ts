@@ -1,55 +1,61 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { isMockMode } from "../../lib/mock-mode.ts";
 import { useSession } from "../auth/auth.hooks.ts";
-import type { Session } from "../auth/auth.types.ts";
 import {
-  completeCandidateStep,
+  completeOnboardingStep,
+  deleteCandidateDocument,
   getCandidateWorkspace,
+  updateCandidatePreferences,
   updateCandidateProfile,
+  uploadCandidateDocument,
 } from "./candidate.api.ts";
 import { candidateKeys } from "./candidate.keys.ts";
 import type {
+  CandidatePreferencesPatch,
   CandidateProfilePatch,
-  OnboardingStep,
+  CandidateWorkspaceData,
 } from "./candidate.types.ts";
+
+export type CandidateAction =
+  | { type: "profile"; patch: CandidateProfilePatch }
+  | { type: "preferences"; patch: CandidatePreferencesPatch }
+  | { type: "step"; stepId: string }
+  | { type: "upload"; file: File }
+  | { type: "delete-document"; documentId: string };
 
 export function useCandidateWorkspace() {
   const { data: session } = useSession();
   return useQuery({
-    queryKey: candidateKeys.workspace(session),
-    queryFn: ({ signal }) => {
-      if (!session) throw new Error("Choose the candidate perspective first.");
-      return getCandidateWorkspace(session, signal);
-    },
-    enabled:
-      isMockMode() && !!session && session.user.workspace === "candidate",
-    staleTime: 60_000,
+    queryKey: candidateKeys.workspace(session ?? null),
+    queryFn: ({ signal }) => getCandidateWorkspace(signal),
+    enabled: session?.user.workspace === "candidate",
+    staleTime: 30_000,
   });
+}
+
+function runCandidateAction(action: CandidateAction) {
+  switch (action.type) {
+    case "profile":
+      return updateCandidateProfile(action.patch);
+    case "preferences":
+      return updateCandidatePreferences(action.patch);
+    case "step":
+      return completeOnboardingStep(action.stepId);
+    case "upload":
+      return uploadCandidateDocument(action.file);
+    case "delete-document":
+      return deleteCandidateDocument(action.documentId);
+  }
 }
 
 export function useCandidateMutation() {
   const client = useQueryClient();
+  const { data: session } = useSession();
   return useMutation({
-    mutationKey: ["candidate-workspace-change"],
-    scope: { id: "candidate-workspace" },
-    mutationFn: async (
-      change:
-        | { type: "profile"; session: Session; patch: CandidateProfilePatch }
-        | {
-            type: "onboarding";
-            session: Session;
-            stepId: OnboardingStep["id"];
-          },
-    ) => {
-      if (change.type === "profile") {
-        return updateCandidateProfile(change.session, change.patch);
-      }
-      return completeCandidateStep(change.session, change.stepId);
-    },
-    onSuccess: (data) => {
-      client.setQueryData(candidateKeys.workspace(data.session), data);
+    mutationFn: runCandidateAction,
+    onSuccess: (data: CandidateWorkspaceData) => {
+      client.setQueryData(candidateKeys.workspace(session ?? null), data);
     },
   });
 }

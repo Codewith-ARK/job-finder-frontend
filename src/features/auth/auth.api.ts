@@ -1,23 +1,60 @@
-import { requireMockMode } from "../../lib/mock-mode.ts";
+import { httpClient } from "../../lib/http.client.ts";
+import type {
+  DemoPersona,
+  LoginInput,
+  PasswordChangeInput,
+  RegisterInput,
+  Session,
+} from "./auth.types.ts";
 
-// Real authentication is T05. Disabled mock mode fails explicitly without HTTP.
-async function adapter() {
-  requireMockMode();
-  return (await import("./mocks/auth.mock.ts")).authMock;
+export async function getSession(
+  signal?: AbortSignal,
+): Promise<Session | null> {
+  const { data } = await httpClient.get<Session | null>("/auth/session", {
+    signal,
+  });
+  return data;
 }
 
-export async function getSession(signal?: AbortSignal) {
-  return (await adapter()).session(signal);
+export async function getDemoPersonas(
+  signal?: AbortSignal,
+): Promise<DemoPersona[]> {
+  const { data } = await httpClient.get<DemoPersona[]>("/auth/demo-personas", {
+    signal,
+  });
+  return data;
 }
 
-export async function getDemoPersonas(signal?: AbortSignal) {
-  return (await adapter()).personas(signal);
+export async function login(input: LoginInput): Promise<Session> {
+  const { data } = await httpClient.post<Session>("/auth/login", input);
+  return data;
 }
 
-export async function selectDemoSession(personaId: string, agencyId?: string) {
-  return (await adapter()).select(personaId, agencyId);
+export async function register(input: RegisterInput): Promise<Session> {
+  const { data } = await httpClient.post<Session>("/auth/register", input);
+  return data;
 }
 
-export async function logout() {
-  return (await adapter()).logout();
+export async function demoLogin(personaId: string): Promise<Session> {
+  const { data } = await httpClient.post<Session>("/auth/demo-login", {
+    personaId,
+  });
+  return data;
+}
+
+export async function switchAgency(agencyId: string): Promise<Session> {
+  const { data } = await httpClient.post<Session>("/auth/context", {
+    agencyId,
+  });
+  return data;
+}
+
+export async function logout(): Promise<void> {
+  await httpClient.post("/auth/logout");
+}
+
+export async function changePassword(
+  input: PasswordChangeInput,
+): Promise<void> {
+  await httpClient.post("/auth/password", input);
 }

@@ -1,52 +1,60 @@
 # Job Finder — frontend
 
-One Next.js application for marketing and candidate, staff, and platform workspaces. Employees and supervisors share the staff routes, with permission-based navigation.
+One Next.js application for marketing and candidate, staff, and platform workspaces. Employees and supervisors share staff routes with role-aware navigation. Real cookie authentication, backend APIs, and seeded data are connected; runtime mocks have been removed.
 
-**Status:** T02.4 completes the Phase 1 mock UI milestone: candidate, staff/supervisor, jobs/applications, and platform preview workflows are implemented with shared mock records. Flowbite React is the default UI component library. Real authentication and feature APIs are not connected.
+**Status:** production prototype implemented. All workflows call FastAPI through the Next.js `/api` proxy. See [frontend context](CONTEXT.md) and workspace `../AGENTS.md`.
 
-**Current priority:** complete mock UI workflows. See [frontend context](CONTEXT.md) and workspace `../AGENTS.md`. Backend integration follows workflow review.
+## Run the project
 
-## Run the existing project
-
-Run commands from this repository. On Windows PowerShell, use `pnpm.cmd` if the PowerShell shim is blocked.
+Run commands from this repository. Start the backend first from the sibling `backend/` repository.
 
 | Item | Verified value |
 | --- | --- |
-| Node version and package manager | Node `v24.19.0` observed; pnpm `11.8.0` declared and installed; `pnpm-lock.yaml` is present |
-| Install command | `pnpm install`; T01 installed TanStack Query and Axios with `pnpm add @tanstack/react-query axios`, preserving the existing package manager and framework versions |
-| Development command and URL | `pnpm dev` defaults to `http://localhost:3000`; `pnpm dev:mock` loads the public development flag from `.env.example`. A second dev server was blocked by an existing server in this checkout during T01 |
-| Build / production start | `pnpm build` passed; `pnpm start --hostname 127.0.0.1 --port 3100` served all five routes with HTTP 200; mocks were disabled in production |
-| Type check / lint / relevant tests | `pnpm typecheck`, `pnpm lint`, and `pnpm test` passed; 10 Node test results cover mock boundaries, cache reuse, cancellation, context isolation, candidate profile/onboarding transitions, and no adapter HTTP requests |
-| Environment file and required variable names | `.env.example` contains only `NEXT_PUBLIC_ENABLE_MOCKS=true`; adapters require this flag AND development mode. Production always disables mocks |
-| UI component library | Flowbite React `0.12.17` is installed; use its components first for buttons, badges, alerts, cards, avatars, progress, form controls, and similar available primitives |
-| API proxy target and path mapping | The shared Axios client targets `/api` with cookies, timeout, and cancellation support; no API proxy or real endpoint integration is configured yet |
+| Node / package manager | Node `v24.19.0`; pnpm `11.8.0`; `pnpm-lock.yaml` |
+| Install | `pnpm install` |
+| Development | `pnpm dev` at `http://localhost:3000`; proxies `/api/*` to `API_ORIGIN` |
+| Production | `pnpm build`, then `pnpm start` |
+| Checks | `pnpm lint` (Biome), `pnpm typecheck`, `pnpm test` (4 passing), `pnpm build` |
+| Environment | `.env.example` contains `API_ORIGIN`; default is `http://127.0.0.1:8000` |
+| UI library | Flowbite React `0.12.17` with Tailwind CSS 4 |
 
-Use `.env.example` for names and safe examples. Never copy backend secrets into browser configuration. Mock-only UI work does not require a real feature API. Start FastAPI using the backend README when testing real requests.
+The backend must expose `/api/health` and the API routes before the workspace will load. Open `/demo` to sign in with seeded accounts (password `Demo1234!`), or `/login` and `/register` for real credentials.
 
-## Explore the foundation
+## Routes
 
-1. Stop any existing dev server for this checkout in its terminal, then run `pnpm dev:mock`.
-2. Open `/`, then `/demo`. Choose Candidate, Employee, Supervisor, or Platform; the chooser opens `/candidate`, `/staff`, or `/platform`.
-3. Use Overview, Workflow map, and Preview states navigation. Switch between Populated, Loading, Empty, and Error; the error and empty previews offer recovery actions.
-4. The Supervisor persona can switch between Northstar Careers and Harbor Talent. Context changes cancel old private requests and remove their cache. End demo session clears the demo session.
-5. Choose Candidate to review the onboarding path, complete the current profile step, open My profile, edit the headline/location/skills, and save the shared mock record.
+| Path | Purpose |
+| --- | --- |
+| `/` | Marketing overview |
+| `/login`, `/register`, `/demo` | Real login, candidate registration, seeded demo sign-in |
+| `/candidate` | Candidate dashboard: onboarding progress, profile snapshot, activity |
+| `/candidate/profile` | Profile and preferences editing |
+| `/candidate/onboarding` | Ordered profile → preferences → documents completion |
+| `/candidate/jobs`, `/candidate/applications` | Agency jobs, apply, and application status |
+| `/staff` | Staff dashboard with workload and activity |
+| `/staff/candidates` | Agency candidate directory, assignment, stage updates |
+| `/staff/team` | Team directory, member creation, role/status changes |
+| `/staff/jobs` | Job publishing and editing (supervisor) |
+| `/staff/applications` | Application pipeline and status updates |
+| `/platform` | Platform overview, agencies, integrations, audit |
 
-The session is browser-memory presentation state, resets on reload, and grants no real permissions. Direct workspace visits without a selected session show the chooser link; mismatched perspectives offer their matching workspace. Disabled mock mode shows an unavailable message and makes no real API requests.
+`/platform` is only for platform administrators; staff routes require an agency membership. Route guards are navigation only — FastAPI authorizes every request.
 
-T02.4 verified the candidate, staff, jobs/application, and platform adapters/query behavior in Node. Flowbite React primitives back the shared badges/feedback plus the landing, demo, candidate, staff, jobs, platform, and workspace controls. Browser visual and interaction QA could not run because the browser-access host was unavailable; responsive/mobile styling remains visually unverified. The next phase is T03 workflow review and contract decisions.
+## Architecture
 
-## Code map
+- `src/app/`: thin routes grouped as `(marketing)`, `(auth)`, and `(workspace)`.
+- `src/features/<scope>/`: feature types, query keys, API functions, hooks, and components.
+- `src/components/`: shared presentation, including `ui/` primitives.
+- `src/lib/`: Axios client, CSRF handling, Query client, formatting, and error mapping.
+- `next.config.ts`: rewrites `/api/:path*` to `${API_ORIGIN}/api/:path*`.
 
-- `src/app/`: routes and layouts.
-- `src/features/`: scoped UI, API functions, Query hooks, keys, and types.
-- `src/components/`: shared presentation.
-- `src/lib/`: central Axios and Query configuration.
-- `src/lib/mocks/`: shared fictional personas, agencies, and active demo session.
-- `scripts/dev-mock.mjs`: loads the public mock flag before running the installed Next CLI.
-- `tests/foundation.test.ts`: focused tests using Node's built-in test runner; no added test framework.
+`src/lib/http.client.ts` sends cookies, attaches the `X-CSRF-Token` header from the CSRF cookie on state changes, normalizes FastAPI errors into `ApiError`, and redirects to `/login` on authenticated 401 responses. React Query keys include user, agency, and role context; logout and agency switches clear private caches.
 
-See [agent rules](AGENTS.md), [architecture](../backend/docs/ARCHITECTURE.md), and [task plan](../backend/docs/PLAN.md). These paths assume sibling `frontend/` and `backend/` checkouts.
+## Verification and limits
 
-## Verify and diagnose
+Verified on 10 November 2026 against a seeded SQLite-backed API:
 
-Confirm the baseline page loads and configured checks run. For API failures, check the API process and proxy mapping first; preserve the actual error. Do not hide failures with mock responses. Session and permission checks become acceptance criteria when authentication is assigned.
+- `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build` pass.
+- A scripted HTTP smoke test passed 20/20 checks against the production `next start` server on port 3100, proxying to FastAPI: health, demo login for candidate/supervisor/platform, session resolution and clearing, candidate workspace and profile update, jobs workspace and apply, wrong-workspace denial, staff and platform workspace loads, and HTTP 200 for every main route.
+- Pixel-level visual, responsive, and click-through browser QA was not run; HTTP/page rendering and API behavior were verified.
+
+See [agent rules](AGENTS.md), [architecture](../backend/docs/ARCHITECTURE.md), [execution contract](../backend/docs/EXECUTION.md), and [task plan](../backend/docs/PLAN.md).

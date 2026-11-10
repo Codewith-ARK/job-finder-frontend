@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
+const apiOrigin = (process.env.API_ORIGIN ?? "http://127.0.0.1:8000").replace(
+  /\/$/,
+  "",
+);
+
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
   turbopack: {
     rules: {
@@ -10,6 +14,14 @@ const nextConfig: NextConfig = {
         as: "*.css",
       },
     },
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${apiOrigin}/api/:path*`,
+      },
+    ];
   },
 };
 

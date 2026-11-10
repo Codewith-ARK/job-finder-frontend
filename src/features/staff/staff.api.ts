@@ -1,23 +1,66 @@
-import { requireMockMode } from "../../lib/mock-mode.ts";
-import type { Session } from "../auth/auth.types.ts";
-import {
-  addTeamMember as addMockTeamMember,
-  assignCandidate as assignMockCandidate,
-  getStaffWorkspace as getMockWorkspace,
-} from "./mocks/staff.mock.ts";
-import type { AssignmentPatch, NewTeamMember } from "./staff.types.ts";
+import { httpClient } from "../../lib/http.client.ts";
+import type {
+  NewTeamMember,
+  StaffWorkspaceData,
+  TeamMemberPatch,
+} from "./staff.types.ts";
 
-export function getStaffWorkspace(session: Session, signal?: AbortSignal) {
-  requireMockMode();
-  return getMockWorkspace(session, signal);
+export async function getStaffWorkspace(
+  signal?: AbortSignal,
+): Promise<StaffWorkspaceData> {
+  const { data } = await httpClient.get<StaffWorkspaceData>(
+    "/staff/workspace",
+    {
+      signal,
+    },
+  );
+  return data;
 }
 
-export function assignCandidate(session: Session, patch: AssignmentPatch) {
-  requireMockMode();
-  return assignMockCandidate(session, patch);
+export async function assignCandidate(
+  candidateId: string,
+  memberId: string | null,
+): Promise<StaffWorkspaceData> {
+  const { data } = await httpClient.post<StaffWorkspaceData>(
+    `/staff/candidates/${candidateId}/assignment`,
+    { memberId },
+  );
+  return data;
 }
 
-export function addTeamMember(session: Session, member: NewTeamMember) {
-  requireMockMode();
-  return addMockTeamMember(session, member);
+export async function updateCandidateStage(
+  candidateId: string,
+  stage: string,
+): Promise<StaffWorkspaceData> {
+  const { data } = await httpClient.patch<StaffWorkspaceData>(
+    `/staff/candidates/${candidateId}/stage`,
+    { stage },
+  );
+  return data;
+}
+
+export interface MemberCreated {
+  workspace: StaffWorkspaceData;
+  temporaryPassword: string;
+}
+
+export async function createTeamMember(
+  payload: NewTeamMember,
+): Promise<MemberCreated> {
+  const { data } = await httpClient.post<MemberCreated>(
+    "/staff/members",
+    payload,
+  );
+  return data;
+}
+
+export async function updateTeamMember(
+  memberId: string,
+  patch: TeamMemberPatch,
+): Promise<StaffWorkspaceData> {
+  const { data } = await httpClient.patch<StaffWorkspaceData>(
+    `/staff/members/${memberId}`,
+    patch,
+  );
+  return data;
 }

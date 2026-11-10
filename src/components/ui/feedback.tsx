@@ -12,12 +12,21 @@ export function Feedback({
   kind?: "info" | "error" | "loading";
 }) {
   return (
-    <Alert role={kind === "error" ? "alert" : "status"}>
-      <div>
-        {kind === "loading" && <Spinner aria-label="Loading" />}
-        <h2>{title}</h2>
-        {children && <p>{children}</p>}
-        {action}
+    <Alert
+      color={kind === "error" ? "failure" : "info"}
+      role={kind === "error" ? "alert" : "status"}
+    >
+      <div className="flex flex-col gap-3">
+        {kind === "loading" && (
+          <Spinner aria-label="Loading" size="sm" className="self-start" />
+        )}
+        <div>
+          <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
+          {children && (
+            <div className="mt-1 text-sm text-slate-600">{children}</div>
+          )}
+        </div>
+        {action && <div className="flex gap-2">{action}</div>}
       </div>
     </Alert>
   );

@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
-import { JobsWorkspace } from "@/features/jobs/components/jobs-workspace";
+import { CandidateJobs } from "@/features/candidates/components/candidate-jobs";
+import { WorkspaceGuard } from "@/features/workspace/components/workspace-guard";
 
-export const metadata: Metadata = { title: "Find jobs" };
+export const metadata: Metadata = { title: "Open roles" };
 
 export default function CandidateJobsPage() {
-  return <JobsWorkspace />;
+  return (
+    <WorkspaceGuard workspace="candidate">
+      <CandidateJobs />
+    </WorkspaceGuard>
+  );
 }

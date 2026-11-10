@@ -1,268 +1,408 @@
 "use client";
 
-import { useIsMutating } from "@tanstack/react-query";
-import { Avatar, Button, Select } from "flowbite-react";
+import {
+  Avatar,
+  Button,
+  Dropdown,
+  DropdownDivider,
+  DropdownHeader,
+  DropdownItem,
+  Label,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  Spinner,
+  TextInput,
+} from "flowbite-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Brand } from "@/components/brand";
-import { Badge } from "@/components/ui/badge";
-import { Feedback } from "@/components/ui/feedback";
-import { isMockMode } from "@/lib/mock-mode";
-import { useDemoSessionChange, useSession } from "../../auth/auth.hooks";
-import type { Workspace } from "../../auth/auth.types";
+import { ActionButton } from "@/components/ui/action-button";
+import {
+  IconBriefcase,
+  IconBuilding,
+  IconChecklist,
+  IconClose,
+  IconHome,
+  IconKey,
+  IconLayers,
+  IconLogout,
+  IconMenu,
+  IconShield,
+  IconUser,
+  IconUsers,
+} from "@/components/ui/icons";
+import {
+  useChangePassword,
+  useLogout,
+  useSession,
+  useSwitchAgency,
+} from "@/features/auth/auth.hooks";
+import type { Workspace } from "@/features/auth/auth.types";
+import { initials } from "@/lib/format";
+import { apiErrorMessage } from "@/lib/http.client";
 
-const workspaceLabels: Record<Workspace, string> = {
-  candidate: "Candidate workspace",
-  staff: "Staff workspace",
-  platform: "Platform workspace",
+type NavItem = {
+  href: string;
+  label: string;
+  icon: (props: { className?: string }) => React.ReactElement;
+  exact?: boolean;
 };
 
+const navigation: Record<Workspace, NavItem[]> = {
+  candidate: [
+    { href: "/candidate", label: "Overview", icon: IconHome, exact: true },
+    { href: "/candidate/profile", label: "Profile", icon: IconUser },
+    { href: "/candidate/onboarding", label: "Onboarding", icon: IconChecklist },
+    { href: "/candidate/jobs", label: "Open roles", icon: IconBriefcase },
+    {
+      href: "/candidate/applications",
+      label: "Applications",
+      icon: IconLayers,
+    },
+  ],
+  staff: [
+    { href: "/staff", label: "Overview", icon: IconHome, exact: true },
+    { href: "/staff/candidates", label: "Candidates", icon: IconUsers },
+    { href: "/staff/team", label: "Team", icon: IconUser },
+    { href: "/staff/jobs", label: "Jobs", icon: IconBriefcase },
+    { href: "/staff/applications", label: "Applications", icon: IconLayers },
+  ],
+  platform: [
+    {
+      href: "/platform",
+      label: "Platform overview",
+      icon: IconShield,
+      exact: true,
+    },
+  ],
+};
+
+const workspaceLabel: Record<Workspace, string> = {
+  candidate: "Candidate workspace",
+  staff: "Agency workspace",
+  platform: "Platform administration",
+};
+
+function isActive(pathname: string, item: NavItem) {
+  if (item.exact) return pathname === item.href;
+  return pathname === item.href || pathname.startsWith(`${item.href}/`);
+}
+
 export function WorkspaceShell({ children }: { children: React.ReactNode }) {
+  const session = useSession();
   const pathname = usePathname();
   const router = useRouter();
-  const session = useSession();
-  const change = useDemoSessionChange();
-  const switching = useIsMutating({ mutationKey: ["session-change"] }) > 0;
-  const [menuOpen, setMenuOpen] = useState(false);
-  const segment = pathname.split("/")[1];
-  const workspace: Workspace =
-    segment === "staff" || segment === "platform" ? segment : "candidate";
-  const current = session.data;
-  const matches = current?.user.workspace === workspace;
+  const logout = useLogout();
+  const switchAgency = useSwitchAgency();
+  const changePassword = useChangePassword();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [passwordError, setPasswordError] = useState<string>();
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+
+  const unauthenticated = !session.isPending && !session.data;
+
+  useEffect(() => {
+    if (!unauthenticated) return;
+    const next = encodeURIComponent(pathname || "/");
+    router.replace(`/login?next=${next}`);
+  }, [pathname, router, unauthenticated]);
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, []);
+
+  if (session.isPending || unauthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <div className="flex items-center gap-3 text-sm text-slate-600">
+          <Spinner size="sm" />
+          Loading your workspace…
+        </div>
+      </div>
+    );
+  }
+
+  if (session.isError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+        <div className="max-w-md rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+          <h1 className="text-lg font-semibold text-slate-900">
+            The API is not reachable
+          </h1>
+          <p className="mt-2 text-sm text-slate-600">
+            {apiErrorMessage(session.error)}
+          </p>
+          <Button className="mt-4" onClick={() => session.refetch()}>
+            Try again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const activeSession = session.data;
+  if (!activeSession) return null;
+  const { user, agency } = activeSession;
+  const items = navigation[user.workspace];
+
+  function signOut() {
+    logout.mutate(undefined, {
+      onSuccess: () => router.replace("/login"),
+    });
+  }
+
+  function submitPassword() {
+    setPasswordError(undefined);
+    changePassword.mutate(
+      { currentPassword, newPassword },
+      {
+        onSuccess: () => {
+          setPasswordOpen(false);
+          router.replace("/login?passwordChanged=1");
+        },
+        onError: (error) => setPasswordError(apiErrorMessage(error)),
+      },
+    );
+  }
 
   return (
-    <div className="workspace-frame">
-      <aside className={`sidebar${menuOpen ? " sidebar-open" : ""}`}>
-        <div className="sidebar-brand">
-          <Brand light />
+    <div className="min-h-screen bg-slate-50">
+      {sidebarOpen && (
+        <button
+          type="button"
+          aria-label="Close navigation"
+          className="fixed inset-0 z-30 bg-slate-900/40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-slate-200 bg-white transition-transform lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex h-16 items-center justify-between border-b border-slate-200 px-5">
+          <Brand />
           <button
-            className="mobile-close"
             type="button"
-            onClick={() => setMenuOpen(false)}
+            className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close navigation"
           >
-            Close
+            <IconClose />
           </button>
         </div>
-        <div className="sidebar-section-label">YOUR WORKSPACE</div>
-        <div className="sidebar-workspace">
-          <span className="workspace-monogram" aria-hidden="true">
-            {workspace[0].toUpperCase()}
-          </span>
-          <div>
-            {workspaceLabels[workspace]}
-            <span>Development preview</span>
+
+        <div className="flex-1 overflow-y-auto px-3 py-4">
+          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-500">
+            {workspaceLabel[user.workspace]}
+          </p>
+          <nav className="space-y-1">
+            {items.map((item) => {
+              const active = isActive(pathname, item);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    active
+                      ? "bg-emerald-50 text-emerald-800"
+                      : "text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  <Icon
+                    className={`h-5 w-5 ${active ? "text-emerald-600" : "text-slate-400"}`}
+                  />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
+        <div className="border-t border-slate-200 p-3">
+          <div className="rounded-lg bg-slate-50 p-3">
+            <p className="flex items-center gap-2 text-xs font-medium text-slate-700">
+              <IconBuilding className="h-4 w-4 text-slate-400" />
+              {agency?.name ?? "Platform access"}
+            </p>
+            <p className="mt-1 text-[11px] text-slate-500">
+              {user.label} account
+            </p>
           </div>
-        </div>
-        <nav
-          aria-label="Workspace navigation"
-          onClick={() => setMenuOpen(false)}
-          onKeyDown={(event) => {
-            if (event.key === "Escape") setMenuOpen(false);
-          }}
-        >
-          <Link
-            className="nav-item nav-active"
-            href={`/${workspace}`}
-            aria-current="page"
-          >
-            <span aria-hidden="true">◫</span> Overview{" "}
-            <span className="nav-arrow" aria-hidden="true">
-              ↗
-            </span>
-          </Link>
-          <Link className="nav-item" href={`/${workspace}#workflow`}>
-            <span aria-hidden="true">⇄</span> Workflow map
-          </Link>
-          <Link className="nav-item" href={`/${workspace}#preview-states`}>
-            <span aria-hidden="true">◉</span> Preview states
-          </Link>
-        </nav>
-        <div className="sidebar-roadmap">
-          <span className="sidebar-section-label">COMING NEXT</span>
-          <p>
-            Profiles, teams, jobs
-            <br />
-            and application updates.
-          </p>
-          <span className="sidebar-small">Built one workflow at a time.</span>
-        </div>
-        <div className="sidebar-footer">
-          <span className="live-dot" /> Mock environment
-          <p>
-            Fictional records.
-            <br />
-            No external services connected.
-          </p>
-          <Link href="/demo">Change perspective ↗</Link>
         </div>
       </aside>
 
-      <div className="workspace-main">
-        <header className="workspace-header">
-          <div className="header-left">
+      <div className="lg:pl-64">
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6">
+          <div className="flex min-w-0 items-center gap-3">
             <button
-              className="mobile-menu"
               type="button"
-              aria-expanded={menuOpen}
-              onClick={() => setMenuOpen(!menuOpen)}
+              className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 lg:hidden"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open navigation"
             >
-              Menu
+              <IconMenu />
             </button>
-            <span className="breadcrumb">
-              Workspace <span>/</span> Overview
-            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-slate-900">
+                {workspaceLabel[user.workspace]}
+              </p>
+              <p className="truncate text-xs text-slate-500">
+                {agency?.name ?? "Job Finder platform"}
+              </p>
+            </div>
           </div>
-          <div className="header-actions">
-            <Badge tone="warning">Mock preview</Badge>
-            <Link
-              className="avatar avatar-small"
-              href="/demo"
-              aria-label="Choose demo perspective"
-            >
-              <Avatar
-                rounded
+
+          <div className="flex items-center gap-2">
+            {user.agencies.length > 1 && (
+              <Dropdown
+                label={agency?.name ?? "Select agency"}
                 size="sm"
-                placeholderInitials={
-                  current
-                    ? current.user.name
-                        .split(" ")
-                        .map((part) => part[0])
-                        .join("")
-                    : "JF"
-                }
-              />
-            </Link>
+                color="light"
+                dismissOnClick
+              >
+                <DropdownHeader>Agencies</DropdownHeader>
+                {user.agencies.map((item) => (
+                  <DropdownItem
+                    key={item.id}
+                    onClick={() => switchAgency.mutate(item.id)}
+                    disabled={switchAgency.isPending}
+                  >
+                    {item.name}
+                    {item.id === agency?.id && (
+                      <span className="ml-2 text-xs text-emerald-600">
+                        Current
+                      </span>
+                    )}
+                  </DropdownItem>
+                ))}
+              </Dropdown>
+            )}
+
+            <Dropdown
+              label={
+                <span className="flex items-center gap-2">
+                  <Avatar
+                    placeholderInitials={initials(user.name)}
+                    rounded
+                    size="xs"
+                  />
+                  <span className="hidden text-sm font-medium sm:block">
+                    {user.name}
+                  </span>
+                </span>
+              }
+              arrowIcon={false}
+              color="light"
+              size="sm"
+            >
+              <DropdownHeader>
+                <span className="block text-sm font-medium text-slate-900">
+                  {user.name}
+                </span>
+                <span className="block truncate text-xs text-slate-500">
+                  {user.email}
+                </span>
+              </DropdownHeader>
+              <DropdownItem
+                icon={IconKey}
+                onClick={() => {
+                  setPasswordError(undefined);
+                  setCurrentPassword("");
+                  setNewPassword("");
+                  setPasswordOpen(true);
+                }}
+              >
+                Change password
+              </DropdownItem>
+              <DropdownDivider />
+              <DropdownItem icon={IconLogout} onClick={signOut}>
+                Sign out
+              </DropdownItem>
+            </Dropdown>
           </div>
         </header>
-        <div className="demo-banner">
-          <span>
-            <strong>You're exploring a demo.</strong> Changes are simulated and
-            reset on reload.
-          </span>
-          <Link href="/demo">Switch perspective ↗</Link>
-        </div>
-        <main id="main-content" className="workspace-content">
-          {!isMockMode() ? (
-            <Feedback
-              title="This demo is not enabled"
-              action={
-                <Link className="button" href="/">
-                  Back to home
-                </Link>
-              }
-            >
-              Start pnpm dev:mock for the development preview. Real
-              authentication will be connected in a later task.
-            </Feedback>
-          ) : session.isPending || switching ? (
-            <Feedback
-              kind="loading"
-              title={
-                switching
-                  ? "Switching demo context…"
-                  : "Opening your workspace…"
-              }
-            />
-          ) : session.isError ? (
-            <Feedback
-              kind="error"
-              title="Couldn't open your workspace"
-              action={
-                <Button
-                  color="dark"
-                  type="button"
-                  onClick={() => session.refetch()}
-                >
-                  Try again
-                </Button>
-              }
-            >
-              {session.error.message}
-            </Feedback>
-          ) : !current ? (
-            <Feedback
-              title="Choose your perspective"
-              action={
-                <Link className="button" href="/demo">
-                  Explore the demo ↗
-                </Link>
-              }
-            >
-              Start with a candidate, employee, supervisor, or platform
-              perspective.
-            </Feedback>
-          ) : !matches ? (
-            <Feedback
-              title="This is a different workspace"
-              action={
-                <Link className="button" href={`/${current.user.workspace}`}>
-                  Open your {current.user.label.toLowerCase()} workspace ↗
-                </Link>
-              }
-            >
-              Your current demo perspective is {current.user.label}. Use the
-              perspective chooser to explore another view.
-            </Feedback>
-          ) : (
-            <>
-              <div className="context-bar">
-                <span>
-                  <span className="context-label">VIEWING AS</span>{" "}
-                  {current.user.name} <Badge>{current.user.label}</Badge>
-                </span>
-                <label className="agency-picker" htmlFor="agency-select">
-                  <span className="context-label">AGENCY</span>
-                  <Select
-                    id="agency-select"
-                    aria-label="Demo agency"
-                    value={current.agency.id}
-                    disabled={
-                      change.isPending || current.user.agencies.length === 1
-                    }
-                    onChange={(event) =>
-                      change.mutate({
-                        personaId: current.user.id,
-                        agencyId: event.target.value,
-                      })
-                    }
-                  >
-                    {current.user.agencies.map((agency) => (
-                      <option value={agency.id} key={agency.id}>
-                        {agency.name}
-                      </option>
-                    ))}
-                  </Select>
-                </label>
-              </div>
-              {change.isSuccess && (
-                <output className="success-text">Demo context updated.</output>
-              )}
-              {change.isError && (
-                <p className="error-text" role="alert">
-                  {change.error.message}
-                </p>
-              )}
-              {children}
-              <footer className="workspace-footer">
-                <span>Job Finder · Workspace foundation</span>
-                <button
-                  className="text-link"
-                  type="button"
-                  onClick={() =>
-                    change.mutate(null, {
-                      onSuccess: () => router.push("/demo"),
-                    })
-                  }
-                  disabled={change.isPending}
-                >
-                  End demo session ↗
-                </button>
-              </footer>
-            </>
-          )}
+
+        <main
+          id="main-content"
+          className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8"
+        >
+          {children}
         </main>
       </div>
+
+      <Modal
+        show={passwordOpen}
+        size="md"
+        onClose={() => setPasswordOpen(false)}
+        dismissible
+      >
+        <ModalHeader>Change password</ModalHeader>
+        <ModalBody>
+          <div className="space-y-4">
+            <p className="text-sm text-slate-600">
+              Updating your password signs you out of every active session.
+            </p>
+            <div>
+              <div className="mb-2 block">
+                <Label htmlFor="current-password">Current password</Label>
+              </div>
+              <TextInput
+                id="current-password"
+                type="password"
+                autoComplete="current-password"
+                value={currentPassword}
+                onChange={(event) => setCurrentPassword(event.target.value)}
+              />
+            </div>
+            <div>
+              <div className="mb-2 block">
+                <Label htmlFor="new-password">New password</Label>
+              </div>
+              <TextInput
+                id="new-password"
+                type="password"
+                autoComplete="new-password"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                At least 8 characters.
+              </p>
+            </div>
+            {passwordError && (
+              <p role="alert" className="text-sm text-red-600">
+                {passwordError}
+              </p>
+            )}
+          </div>
+        </ModalBody>
+        <ModalFooter>
+          <ActionButton
+            color="success"
+            onClick={submitPassword}
+            disabled={
+              changePassword.isPending ||
+              currentPassword.length === 0 ||
+              newPassword.length < 8
+            }
+            pending={changePassword.isPending}
+          >
+            Update password
+          </ActionButton>
+          <Button color="light" onClick={() => setPasswordOpen(false)}>
+            Cancel
+          </Button>
+        </ModalFooter>
+      </Modal>
     </div>
   );
 }

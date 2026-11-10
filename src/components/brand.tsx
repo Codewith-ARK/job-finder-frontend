@@ -4,14 +4,18 @@ export function Brand({ light = false }: { light?: boolean }) {
   return (
     <Link
       href="/"
-      className={`brand${light ? " brand-light" : ""}`}
+      className="inline-flex items-center gap-2.5"
       aria-label="Job Finder home"
     >
-      <span className="brand-mark" aria-hidden="true">
-        jf<span>↗</span>
+      <span className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-600 text-[13px] font-bold text-white">
+        JF
       </span>
-      <span>
-        jobfinder<span className="brand-period">.</span>
+      <span
+        className={`text-[15px] font-semibold tracking-tight ${
+          light ? "text-white" : "text-slate-900"
+        }`}
+      >
+        Job Finder
       </span>
     </Link>
   );

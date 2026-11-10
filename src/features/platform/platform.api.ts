@@ -1,8 +1,22 @@
-import { requireMockMode } from "../../lib/mock-mode.ts";
-import type { Session } from "../auth/auth.types.ts";
-import { getPlatformMock } from "./mocks/platform.mock.ts";
+import { httpClient } from "../../lib/http.client.ts";
+import type { AgencyStatus, PlatformData } from "./platform.types.ts";
 
-export function getPlatformWorkspace(session: Session, signal?: AbortSignal) {
-  requireMockMode();
-  return getPlatformMock(session, signal);
+export async function getPlatformWorkspace(
+  signal?: AbortSignal,
+): Promise<PlatformData> {
+  const { data } = await httpClient.get<PlatformData>("/platform/workspace", {
+    signal,
+  });
+  return data;
+}
+
+export async function updateAgencyStatus(
+  agencyId: string,
+  status: AgencyStatus,
+): Promise<PlatformData> {
+  const { data } = await httpClient.patch<PlatformData>(
+    `/platform/agencies/${agencyId}`,
+    { status },
+  );
+  return data;
 }

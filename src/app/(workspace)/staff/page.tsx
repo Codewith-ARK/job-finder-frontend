@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
-import { StaffWorkspace } from "@/features/staff/components/staff-workspace";
+import { StaffDashboard } from "@/features/staff/components/staff-dashboard";
+import { WorkspaceGuard } from "@/features/workspace/components/workspace-guard";
 
-export const metadata: Metadata = { title: "Staff workspace" };
+export const metadata: Metadata = { title: "Agency overview" };
 
 export default function StaffPage() {
-  return <StaffWorkspace />;
+  return (
+    <WorkspaceGuard workspace="staff">
+      <StaffDashboard />
+    </WorkspaceGuard>
+  );
 }

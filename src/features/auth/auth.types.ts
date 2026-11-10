@@ -1,9 +1,5 @@
 export type Workspace = "candidate" | "staff" | "platform";
-export type DemoRole =
-  | "candidate"
-  | "employee"
-  | "supervisor"
-  | "platform-admin";
+export type Role = "candidate" | "employee" | "supervisor" | "platform_admin";
 
 export interface Agency {
   id: string;
@@ -13,14 +9,40 @@ export interface Agency {
 export interface DemoPersona {
   id: string;
   name: string;
-  role: DemoRole;
+  role: Role;
   label: string;
   description: string;
+  workspace: Workspace;
+}
+
+export interface SessionUser {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  label: string;
   workspace: Workspace;
   agencies: Agency[];
 }
 
 export interface Session {
-  user: Omit<DemoPersona, "description">;
-  agency: Agency;
+  user: SessionUser;
+  agency: Agency | null;
+}
+
+export interface LoginInput {
+  email: string;
+  password: string;
+  agencyId?: string;
+}
+
+export interface RegisterInput {
+  name: string;
+  email: string;
+  password: string;
+}
+
+export interface PasswordChangeInput {
+  currentPassword: string;
+  newPassword: string;
 }

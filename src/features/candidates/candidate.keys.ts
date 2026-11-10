@@ -1,11 +1,13 @@
 import type { Session } from "../auth/auth.types.ts";
 
 export const candidateKeys = {
-  workspace: (session: Session | null | undefined) =>
+  all: ["private", "candidate"] as const,
+  workspace: (session: Session | null) =>
     [
       "private",
-      session?.user.id,
-      session?.agency.id,
-      "candidate-workspace",
+      "candidate",
+      "workspace",
+      session?.user.id ?? "anonymous",
+      session?.agency?.id ?? "none",
     ] as const,
 };

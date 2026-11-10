@@ -1,7 +1,9 @@
-import type { Session } from "../auth/auth.types.ts";
-
-export type StaffTab = "overview" | "candidates" | "team";
-export type CandidateStatus = "onboarding" | "review" | "interview" | "ready";
+export type CandidateStatus =
+  | "onboarding"
+  | "review"
+  | "interview"
+  | "ready"
+  | string;
 
 export interface StaffCandidate {
   id: string;
@@ -18,6 +20,7 @@ export interface StaffCandidate {
 export interface TeamMember {
   id: string;
   name: string;
+  email: string;
   role: "employee" | "supervisor";
   team: string;
   workload: number;
@@ -28,31 +31,34 @@ export interface StaffActivity {
   id: string;
   title: string;
   detail: string;
-  age: string;
   tone: "success" | "info" | "warning";
+  createdAt: string;
+}
+
+export interface StaffStats {
+  activeCandidates: number;
+  openAssignments: number;
+  onboardingInProgress: number;
+  applicationActivity: number;
 }
 
 export interface StaffWorkspaceData {
-  session: Pick<Session, "user" | "agency">;
-  stats: {
-    activeCandidates: number;
-    openAssignments: number;
-    onboardingInProgress: number;
-    applicationActivity: number;
-  };
+  stats: StaffStats;
   candidates: StaffCandidate[];
   teamMembers: TeamMember[];
   teams: string[];
   activity: StaffActivity[];
 }
 
-export interface AssignmentPatch {
-  candidateId: string;
-  memberId: string;
-}
-
 export interface NewTeamMember {
   name: string;
+  email: string;
   role: "employee" | "supervisor";
   team: string;
+}
+
+export interface TeamMemberPatch {
+  role?: "employee" | "supervisor";
+  team?: string;
+  active?: boolean;
 }

@@ -1,12 +1,13 @@
-import type { Session } from "../auth/auth.types.ts";
-
 export interface CandidateProfile {
   name: string;
+  email: string;
   headline: string;
   location: string;
-  email: string;
   skills: string[];
   completion: number;
+  preferredWorkType: string;
+  preferredLocation: string;
+  salaryExpectation: string;
 }
 
 export interface OnboardingStep {
@@ -16,14 +17,26 @@ export interface OnboardingStep {
   status: "complete" | "next" | "upcoming";
 }
 
+export interface CandidateDocument {
+  id: string;
+  filename: string;
+  size: number;
+  createdAt: string;
+}
+
 export interface CandidateWorkspaceData {
-  session: Pick<Session, "user" | "agency">;
   profile: CandidateProfile;
   onboarding: OnboardingStep[];
   nextSteps: string[];
+  documents: CandidateDocument[];
 }
 
 export type CandidateProfilePatch = Pick<
   CandidateProfile,
   "headline" | "location" | "skills"
+>;
+
+export type CandidatePreferencesPatch = Pick<
+  CandidateProfile,
+  "preferredWorkType" | "preferredLocation" | "salaryExpectation"
 >;

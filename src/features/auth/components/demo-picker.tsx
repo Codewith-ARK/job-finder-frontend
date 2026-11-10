@@ -1,110 +1,170 @@
 "use client";
 
-import { Avatar, Button, Card } from "flowbite-react";
+import { Badge, Button, Card, Spinner } from "flowbite-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Brand } from "@/components/brand";
-import { Badge } from "@/components/ui/badge";
+import { ActionButton } from "@/components/ui/action-button";
 import { Feedback } from "@/components/ui/feedback";
-import { isMockMode } from "@/lib/mock-mode";
-import { useDemoPersonas, useDemoSessionChange } from "../auth.hooks";
+import {
+  IconBriefcase,
+  IconShield,
+  IconUser,
+  IconUsers,
+} from "@/components/ui/icons";
+import { apiErrorMessage } from "@/lib/http.client";
+import { useDemoLogin, useDemoPersonas } from "../auth.hooks";
+import type { DemoPersona } from "../auth.types";
+
+const icons = {
+  candidate: IconUser,
+  employee: IconBriefcase,
+  supervisor: IconUsers,
+  platform_admin: IconShield,
+} as const;
+
+const roleTone = {
+  candidate: "success",
+  employee: "info",
+  supervisor: "purple",
+  platform_admin: "dark",
+} as const;
 
 export function DemoPicker() {
   const personas = useDemoPersonas();
-  const change = useDemoSessionChange();
+  const demoLogin = useDemoLogin();
   const router = useRouter();
+  const [pendingId, setPendingId] = useState<string>();
+  const [error, setError] = useState<string>();
+
+  function enter(persona: DemoPersona) {
+    setError(undefined);
+    setPendingId(persona.id);
+    demoLogin.mutate(persona.id, {
+      onSuccess: (session) => {
+        const home =
+          session.user.workspace === "candidate"
+            ? "/candidate"
+            : session.user.workspace === "staff"
+              ? "/staff"
+              : "/platform";
+        router.replace(home);
+      },
+      onError: (cause) => {
+        setPendingId(undefined);
+        setError(apiErrorMessage(cause));
+      },
+    });
+  }
+
   return (
-    <div className="demo-page">
-      <header className="public-header">
-        <Brand />
-        <Link className="text-link" href="/">
-          Back to home ↗
-        </Link>
-      </header>
-      <main className="demo-content" id="main-content">
-        <Badge tone="warning">Interactive demo · T01 foundation</Badge>
-        <h1>
-          One platform.
-          <br />
-          <span className="muted">A few perspectives.</span>
-        </h1>
-        <p className="intro">
-          Choose a demo workspace to explore the foundation. All people and
-          agencies are fictional; no account is created.
-        </p>
-        {!isMockMode() ? (
-          <Feedback title="The demo is turned off">
-            Run the frontend with pnpm dev:mock to explore the development
-            preview. Real sign-in is not connected yet.
-          </Feedback>
-        ) : personas.isPending ? (
-          <Feedback kind="loading" title="Preparing demo perspectives…" />
-        ) : personas.isError ? (
-          <Feedback
-            kind="error"
-            title="Couldn't load the demo"
-            action={
-              <Button
-                color="dark"
-                type="button"
-                onClick={() => personas.refetch()}
-              >
-                Try again
-              </Button>
-            }
+    <div className="min-h-screen bg-slate-50">
+      <header className="border-b border-slate-200 bg-white">
+        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
+          <Brand />
+          <Link
+            href="/login"
+            className="text-sm font-medium text-slate-600 hover:text-slate-900"
           >
-            {personas.error.message}
-          </Feedback>
-        ) : (
-          <div className="persona-grid" aria-busy={change.isPending}>
-            {personas.data.map((persona, index) => (
-              <Card
-                key={persona.id}
-                role="button"
-                tabIndex={change.isPending ? -1 : 0}
-                aria-disabled={change.isPending}
-                onClick={() =>
-                  change.mutate(
-                    { personaId: persona.id },
-                    { onSuccess: () => router.push(`/${persona.workspace}`) },
-                  )
-                }
-              >
-                <span className="persona-top">
-                  <Avatar
-                    rounded
-                    placeholderInitials={persona.name
-                      .split(" ")
-                      .map((part) => part[0])
-                      .join("")}
-                  />
-                  <span className="index">0{index + 1}</span>
-                </span>
-                <span className="persona-role">{persona.label}</span>
-                <span className="persona-description">
-                  {persona.description}
-                </span>
-                <span className="persona-bottom">
-                  Explore as {persona.name.split(" ")[0]}{" "}
-                  <span aria-hidden="true">↗</span>
-                </span>
-                <Button color="light" size="sm" disabled={change.isPending}>
-                  Explore as {persona.name.split(" ")[0]}{" "}
-                  <span aria-hidden="true">â†—</span>
-                </Button>
-              </Card>
-            ))}
+            Sign in with a password
+          </Link>
+        </div>
+      </header>
+
+      <main id="main-content" className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+        <Badge color="success" className="w-fit">
+          Interactive demo
+        </Badge>
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+          Choose a perspective
+        </h1>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600">
+          Each option signs you into a real seeded account. The API enforces
+          that account's role and agency, and the workspace is populated with
+          the same records every perspective sees.
+        </p>
+
+        {error && (
+          <div className="mt-6">
+            <Feedback kind="error" title="Could not start the demo session">
+              {error}
+            </Feedback>
           </div>
         )}
-        {change.isPending && <output>Opening your demo workspace…</output>}
-        {change.isError && (
-          <p className="error-text" role="alert">
-            {change.error.message}
-          </p>
+
+        {personas.isPending && (
+          <div className="mt-10 flex items-center gap-3 text-sm text-slate-600">
+            <Spinner size="sm" /> Loading demo accounts…
+          </div>
         )}
-        <p className="fine-print">
-          Presentation only. Demo roles do not grant real permissions. Reloading
-          resets the demo session.
+
+        {personas.isError && (
+          <div className="mt-8">
+            <Feedback
+              kind="error"
+              title="Demo sign-in is not available"
+              action={
+                <Button color="light" as={Link} href="/login">
+                  Use the sign-in form
+                </Button>
+              }
+            >
+              {apiErrorMessage(personas.error)}
+            </Feedback>
+          </div>
+        )}
+
+        {personas.data && personas.data.length === 0 && (
+          <div className="mt-8">
+            <Feedback kind="info" title="No demo accounts are seeded">
+              Run the backend seed command to create the demo dataset.
+            </Feedback>
+          </div>
+        )}
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          {personas.data?.map((persona) => {
+            const Icon = icons[persona.role];
+            return (
+              <Card key={persona.id} className="flex flex-col">
+                <div className="flex items-start gap-4">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-emerald-50 text-emerald-700">
+                    <Icon className="h-6 w-6" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="text-base font-semibold text-slate-900">
+                        {persona.name}
+                      </h2>
+                      <Badge color={roleTone[persona.role]} className="w-fit">
+                        {persona.label}
+                      </Badge>
+                    </div>
+                    <p className="mt-1 text-sm text-slate-600">
+                      {persona.description}
+                    </p>
+                    <ActionButton
+                      className="mt-4"
+                      color="success"
+                      size="sm"
+                      onClick={() => enter(persona)}
+                      disabled={demoLogin.isPending}
+                      pending={pendingId === persona.id}
+                    >
+                      Sign in as {persona.name.split(" ")[0]}
+                    </ActionButton>
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+
+        <p className="mt-10 text-xs text-slate-500">
+          Demo accounts use the shared password <code>Demo1234!</code>. Seeded
+          data is development-safe; configure real accounts and disable demo
+          sign-in for any deployment.
         </p>
       </main>
     </div>

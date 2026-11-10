@@ -1,4 +1,5 @@
 export const authKeys = {
-  session: ["session"] as const,
-  personas: ["demo-personas"] as const,
+  all: ["auth"] as const,
+  session: ["auth", "session"] as const,
+  personas: ["auth", "demo-personas"] as const,
 };

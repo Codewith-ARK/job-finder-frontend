@@ -1,5 +1,3 @@
-import type { Session } from "../auth/auth.types.ts";
-
 export type JobStatus = "open" | "closed";
 export type ApplicationStatus =
   | "submitted"
@@ -7,23 +5,26 @@ export type ApplicationStatus =
   | "interview"
   | "offer"
   | "closed";
+export type WorkType = "Remote" | "Hybrid" | "On-site";
 
 export interface Job {
   id: string;
   title: string;
   company: string;
   location: string;
-  workType: "Remote" | "Hybrid" | "On-site";
+  workType: WorkType;
   salary: string;
   tags: string[];
   status: JobStatus;
   posted: string;
+  description: string;
 }
 
 export interface Application {
   id: string;
   jobId: string;
   candidateId: string;
+  candidateName: string;
   status: ApplicationStatus;
   submittedAt: string;
   nextStep: string;
@@ -31,7 +32,18 @@ export interface Application {
 }
 
 export interface JobsWorkspaceData {
-  session: Pick<Session, "user" | "agency">;
   jobs: Job[];
   applications: Application[];
 }
+
+export interface JobInput {
+  title: string;
+  company: string;
+  location: string;
+  workType: WorkType;
+  salary: string;
+  tags: string[];
+  description: string;
+}
+
+export type JobPatch = Partial<JobInput & { status: JobStatus }>;
