@@ -387,7 +387,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
         </ModalBody>
         <ModalFooter>
           <ActionButton
-            color="success"
+            color="green"
             onClick={submitPassword}
             disabled={
               changePassword.isPending ||

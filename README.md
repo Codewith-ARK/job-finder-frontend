@@ -49,12 +49,14 @@ The backend must expose `/api/health` and the API routes before the workspace wi
 
 `src/lib/http.client.ts` sends cookies, attaches the `X-CSRF-Token` header from the CSRF cookie on state changes, normalizes FastAPI errors into `ApiError`, and redirects to `/login` on authenticated 401 responses. React Query keys include user, agency, and role context; logout and agency switches clear private caches.
 
+Flowbite React styles come from Tailwind CSS 4 through `flowbite-react/plugin/tailwindcss` and the generated `.flowbite-react/class-list.json`. After adding a new Flowbite component, run `pnpm exec flowbite-react build` and commit the regenerated class list; `ThemeInit` is mounted in the root layout. Without this, components render with missing classes (for example, an unstyled button).
+
 ## Verification and limits
 
 Verified on 10 November 2026 against a seeded SQLite-backed API:
 
 - `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build` pass.
 - A scripted HTTP smoke test passed 20/20 checks against the production `next start` server on port 3100, proxying to FastAPI: health, demo login for candidate/supervisor/platform, session resolution and clearing, candidate workspace and profile update, jobs workspace and apply, wrong-workspace denial, staff and platform workspace loads, and HTTP 200 for every main route.
-- Pixel-level visual, responsive, and click-through browser QA was not run; HTTP/page rendering and API behavior were verified.
+- Headless Chrome screenshots at 1440px confirmed the login, candidate dashboard, onboarding, staff dashboard, job board, team directory, and platform overview render correctly. Mobile/responsive layouts and full click-through QA were not run.
 
 See [agent rules](AGENTS.md), [architecture](../backend/docs/ARCHITECTURE.md), [execution contract](../backend/docs/EXECUTION.md), and [task plan](../backend/docs/PLAN.md).

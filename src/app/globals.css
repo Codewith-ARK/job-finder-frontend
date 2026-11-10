@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "flowbite-react/plugin/tailwindcss";
+@source "../../.flowbite-react/class-list.json";
 
 @theme inline {
   --font-sans: var(--font-geist-sans);
@@ -69,4 +71,12 @@ a {
 ::selection {
   background: #a7f3d0;
   color: #064e3b;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #fff inset;
+  -webkit-text-fill-color: #0f172a;
+  transition: background-color 5000s ease-in-out 0s;
 }

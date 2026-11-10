@@ -1,6 +1,6 @@
 # Frontend context
 
-**Phase:** production prototype. **Architecture:** approved v0.2. **Latest delivery:** real authentication and all feature APIs are connected; runtime mocks and mock mode are removed. Lint, typecheck, tests, production build, and scripted HTTP smoke checks pass. Pixel-level browser visual QA remains unperformed.
+**Phase:** production prototype. **Architecture:** approved v0.2. **Latest delivery:** real authentication and all feature APIs are connected; runtime mocks and mock mode are removed. Lint, typecheck, tests, production build, and scripted HTTP smoke checks pass. Flowbite's Tailwind plugin is configured and desktop screens were verified with headless Chrome; mobile visual QA remains unperformed.
 
 ## Current outcome
 
@@ -79,5 +79,6 @@ Next scoped task: T03 workflow review and contracts. Review the complete mock wo
 - **Proxy:** `next.config.ts` rewrites `/api/:path*` to `${API_ORIGIN}/api/:path*`, default `http://127.0.0.1:8000`.
 - **Verified:** `pnpm lint`, `pnpm typecheck`, `pnpm test` (4 passing), and `pnpm build` (18 static/dynamic routes) pass. `pnpm lint` is now clean; the former demo-flow lint blocker was deleted with the mocks.
 - **HTTP smoke:** 20/20 checks against the production `next start` server (port 3100) proxying to FastAPI — health, candidate/supervisor/platform demo login, session resolution and clearing after logout, candidate workspace and profile update, jobs workspace and application, staff/platform workspace loads, wrong-workspace 403s, and HTTP 200 for `/`, `/login`, `/demo`, `/register`, `/candidate`, `/staff`, and `/platform`.
-- **Limit:** pixel-level visual, responsive, and click-through browser QA was not run. The checks cover rendering, routing, authentication, authorization boundaries, and representative mutations, not visual polish.
+- **Limit:** mobile/responsive layouts and full click-through QA were not run. Desktop screens verified at 1440px with headless Chrome; the checks also cover rendering, routing, authentication, authorization boundaries, and representative mutations.
+- **UI setup:** after this delivery, Flowbite's Tailwind 4 plugin and generated `.flowbite-react/class-list.json` were configured in `globals.css`, and `ThemeInit` was mounted in the root layout. The earlier unconfigured setup produced unstyled Flowbite components; `color="success"` buttons were also corrected to `green`. Verify new pages visually after adding Flowbite components.
 - **Related backend:** endpoint shapes, seeds, and permissions are in `../backend/docs/EXECUTION.md`. Frontend and backend are independent Git repositories with separate commits.

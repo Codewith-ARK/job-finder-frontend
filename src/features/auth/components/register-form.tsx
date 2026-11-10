@@ -87,7 +87,7 @@ export function RegisterForm() {
       </div>
       <ActionButton
         type="submit"
-        color="success"
+        color="green"
         fullSized
         disabled={register.isPending || password.length < 8}
         pending={register.isPending}

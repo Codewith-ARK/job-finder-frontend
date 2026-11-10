@@ -92,7 +92,7 @@ export function StaffApplications() {
         description="The shared pipeline. Status changes are visible to the candidate immediately."
       />
 
-      {notice && <Alert color="success">{notice}</Alert>}
+      {notice && <Alert color="green">{notice}</Alert>}
       {error && (
         <Alert color="failure" role="alert">
           {error}

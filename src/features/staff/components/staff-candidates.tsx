@@ -214,7 +214,7 @@ export function StaffCandidates() {
                     <div className="w-32">
                       <Progress
                         progress={candidate.onboarding}
-                        color="success"
+                        color="green"
                         size="sm"
                       />
                       <span className="mt-1 block text-xs text-slate-500">

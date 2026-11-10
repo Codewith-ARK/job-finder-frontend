@@ -57,6 +57,7 @@ export function CandidateDashboard() {
     (item) => item.status !== "closed",
   ).length;
   const jobsById = new Map((jobs.data?.jobs ?? []).map((job) => [job.id, job]));
+  const nextStep = data.onboarding.find((step) => step.status === "next");
 
   return (
     <div className="space-y-8">
@@ -65,7 +66,7 @@ export function CandidateDashboard() {
         title={`Welcome back, ${data.profile.name.split(" ")[0]}`}
         description="Your profile, onboarding, and applications in one place."
         actions={
-          <Button color="success" as={Link} href="/candidate/jobs">
+          <Button color="green" as={Link} href="/candidate/jobs">
             Browse open roles
           </Button>
         }
@@ -93,8 +94,11 @@ export function CandidateDashboard() {
         <StatCard
           label="Next step"
           value={
-            data.onboarding.find((step) => step.status === "next")?.title ??
-            "All set"
+            nextStep
+              ? nextStep.id === "documents"
+                ? "Documents"
+                : nextStep.title
+              : "All set"
           }
           hint={
             data.onboarding.every((step) => step.status === "complete")
@@ -127,7 +131,7 @@ export function CandidateDashboard() {
           </div>
           <Progress
             progress={data.profile.completion}
-            color="success"
+            color="green"
             size="sm"
             className="mt-5"
           />
@@ -243,7 +247,7 @@ export function CandidateDashboard() {
               title="No applications yet"
               description="Browse the roles your agency has published and apply when something fits."
               action={
-                <Button color="success" as={Link} href="/candidate/jobs">
+                <Button color="green" as={Link} href="/candidate/jobs">
                   Browse open roles
                 </Button>
               }

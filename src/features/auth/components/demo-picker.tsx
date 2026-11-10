@@ -73,7 +73,7 @@ export function DemoPicker() {
       </header>
 
       <main id="main-content" className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-        <Badge color="success" className="w-fit">
+        <Badge color="green" className="w-fit">
           Interactive demo
         </Badge>
         <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
@@ -146,7 +146,7 @@ export function DemoPicker() {
                     </p>
                     <ActionButton
                       className="mt-4"
-                      color="success"
+                      color="green"
                       size="sm"
                       onClick={() => enter(persona)}
                       disabled={demoLogin.isPending}

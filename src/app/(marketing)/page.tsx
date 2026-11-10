@@ -51,7 +51,7 @@ export default function Home() {
             >
               Sign in
             </Link>
-            <LinkButton color="success" size="sm" href="/register">
+            <LinkButton color="green" size="sm" href="/register">
               Get started
             </LinkButton>
           </nav>
@@ -78,7 +78,7 @@ export default function Home() {
               decisions made with the full picture.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <LinkButton color="success" size="lg" href="/register">
+              <LinkButton color="green" size="lg" href="/register">
                 Create your account
               </LinkButton>
               <LinkButton color="light" size="lg" href="/demo">
@@ -151,7 +151,7 @@ export default function Home() {
                 data.
               </p>
             </div>
-            <LinkButton color="success" size="lg" href="/demo">
+            <LinkButton color="green" size="lg" href="/demo">
               Open the demo
             </LinkButton>
           </div>

@@ -139,7 +139,7 @@ export function StaffTeam() {
         actions={
           isSupervisor ? (
             <Button
-              color="success"
+              color="green"
               onClick={openCreate}
               disabled={!data.teams.length}
             >
@@ -205,7 +205,7 @@ export function StaffTeam() {
                       <div className="w-32">
                         <Progress
                           progress={member.workload}
-                          color="success"
+                          color="green"
                           size="sm"
                         />
                         <span className="mt-1 block text-xs text-slate-500">
@@ -324,7 +324,7 @@ export function StaffTeam() {
         </ModalBody>
         <ModalFooter>
           <ActionButton
-            color="success"
+            color="green"
             onClick={create}
             disabled={
               mutation.isPending ||
@@ -376,7 +376,7 @@ export function StaffTeam() {
           )}
         </ModalBody>
         <ModalFooter>
-          <Button color="success" onClick={() => setCredentials(undefined)}>
+          <Button color="green" onClick={() => setCredentials(undefined)}>
             Done
           </Button>
         </ModalFooter>

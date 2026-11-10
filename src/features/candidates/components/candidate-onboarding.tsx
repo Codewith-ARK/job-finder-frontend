@@ -119,7 +119,7 @@ export function CandidateOnboarding() {
         description="Three short steps. Each one unlocks the next, and your team sees progress as you go."
       />
 
-      {notice && <Alert color="success">{notice}</Alert>}
+      {notice && <Alert color="green">{notice}</Alert>}
       {error && (
         <Alert color="failure" role="alert">
           {error}
@@ -147,7 +147,7 @@ export function CandidateOnboarding() {
         </div>
         <Progress
           progress={data.profile.completion}
-          color="success"
+          color="green"
           size="sm"
           className="mt-4"
         />
@@ -181,7 +181,7 @@ export function CandidateOnboarding() {
                 {step.status === "next" && step.id !== "documents" && (
                   <ActionButton
                     size="xs"
-                    color="success"
+                    color="green"
                     onClick={() => complete(step.id)}
                     disabled={mutation.isPending}
                     pending={
@@ -196,7 +196,7 @@ export function CandidateOnboarding() {
                 {step.status === "next" && step.id === "documents" && (
                   <Button
                     size="xs"
-                    color="success"
+                    color="green"
                     onClick={() => complete(step.id)}
                     disabled={mutation.isPending || !hasDocuments}
                     title={
@@ -238,7 +238,7 @@ export function CandidateOnboarding() {
             />
           </div>
           <ActionButton
-            color="success"
+            color="green"
             onClick={upload}
             disabled={!file || mutation.isPending}
             pending={
@@ -279,7 +279,7 @@ export function CandidateOnboarding() {
                     Download
                   </a>
                   <Button
-                    color="failure"
+                    color="red"
                     size="xs"
                     outline
                     onClick={() => setPendingDelete(document.id)}
@@ -307,7 +307,7 @@ export function CandidateOnboarding() {
         </ModalBody>
         <ModalFooter>
           <ActionButton
-            color="failure"
+            color="red"
             onClick={() => pendingDelete && remove(pendingDelete)}
             pending={mutation.isPending}
           >

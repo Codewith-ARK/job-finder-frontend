@@ -92,7 +92,7 @@ export function CandidateJobs() {
         }
       />
 
-      {notice && <Alert color="success">{notice}</Alert>}
+      {notice && <Alert color="green">{notice}</Alert>}
       {error && (
         <Alert color="failure" role="alert">
           {error}
@@ -172,7 +172,7 @@ export function CandidateJobs() {
                     </div>
                   ) : (
                     <ActionButton
-                      color="success"
+                      color="green"
                       size="sm"
                       onClick={() => apply(job.id, job.title)}
                       disabled={mutation.isPending}

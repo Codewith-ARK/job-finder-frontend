@@ -161,14 +161,14 @@ export function StaffJobs() {
         }
         actions={
           isSupervisor ? (
-            <Button color="success" onClick={openCreate}>
+            <Button color="green" onClick={openCreate}>
               <IconPlus className="mr-2 h-4 w-4" /> New role
             </Button>
           ) : undefined
         }
       />
 
-      {notice && <Alert color="success">{notice}</Alert>}
+      {notice && <Alert color="green">{notice}</Alert>}
       {error && (
         <Alert color="failure" role="alert">
           {error}
@@ -181,7 +181,7 @@ export function StaffJobs() {
           description="Supervisors can publish the first role; candidates in this agency will see it immediately."
           action={
             isSupervisor ? (
-              <Button color="success" onClick={openCreate}>
+              <Button color="green" onClick={openCreate}>
                 Publish a role
               </Button>
             ) : undefined
@@ -373,7 +373,7 @@ export function StaffJobs() {
         </ModalBody>
         <ModalFooter>
           <ActionButton
-            color="success"
+            color="green"
             onClick={submit}
             disabled={
               mutation.isPending ||

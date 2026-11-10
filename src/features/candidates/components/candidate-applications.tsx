@@ -56,7 +56,7 @@ export function CandidateApplications() {
         title="Applications"
         description="Every application you have submitted, with the latest status from your agency team."
         actions={
-          <Button color="success" as={Link} href="/candidate/jobs">
+          <Button color="green" as={Link} href="/candidate/jobs">
             Browse roles
           </Button>
         }
@@ -67,7 +67,7 @@ export function CandidateApplications() {
           title="No applications yet"
           description="Once you apply to a role, it appears here with its current status and next step."
           action={
-            <Button color="success" as={Link} href="/candidate/jobs">
+            <Button color="green" as={Link} href="/candidate/jobs">
               Find a role
             </Button>
           }

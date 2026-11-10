@@ -106,7 +106,7 @@ export function CandidateProfile() {
         description="Keep these details current — your agency team uses them to match you with the right roles."
       />
 
-      {notice && <Alert color="success">{notice}</Alert>}
+      {notice && <Alert color="green">{notice}</Alert>}
       {error && (
         <Alert color="failure" role="alert">
           {error}
@@ -163,7 +163,7 @@ export function CandidateProfile() {
         </div>
         <div className="mt-5 flex justify-end">
           <ActionButton
-            color="success"
+            color="green"
             onClick={() => save("profile")}
             disabled={mutation.isPending}
             pending={
@@ -224,7 +224,7 @@ export function CandidateProfile() {
         </div>
         <div className="mt-5 flex justify-end">
           <ActionButton
-            color="success"
+            color="green"
             onClick={() => save("preferences")}
             disabled={mutation.isPending}
             pending={

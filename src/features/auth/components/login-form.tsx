@@ -37,7 +37,7 @@ export function LoginForm({
   return (
     <form className="space-y-5" onSubmit={submit}>
       {passwordChanged && (
-        <Alert color="success">
+        <Alert color="green">
           Your password was updated. Sign in with the new password.
         </Alert>
       )}
@@ -76,7 +76,7 @@ export function LoginForm({
       </div>
       <ActionButton
         type="submit"
-        color="success"
+        color="green"
         fullSized
         disabled={login.isPending}
         pending={login.isPending}

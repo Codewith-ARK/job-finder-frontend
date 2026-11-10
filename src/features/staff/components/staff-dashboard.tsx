@@ -76,7 +76,7 @@ export function StaffDashboard() {
         title="Agency overview"
         description={`${session?.agency?.name ?? "Your agency"} · candidates, assignments, and application activity.`}
         actions={
-          <Button color="success" as={Link} href="/staff/candidates">
+          <Button color="green" as={Link} href="/staff/candidates">
             Open candidate directory
           </Button>
         }
@@ -109,7 +109,7 @@ export function StaffDashboard() {
         />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid items-start gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <Card>
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-slate-900">
@@ -142,7 +142,7 @@ export function StaffDashboard() {
                   </div>
                   <Progress
                     progress={candidate.onboarding}
-                    color="success"
+                    color="green"
                     size="sm"
                     className="mt-2"
                   />
