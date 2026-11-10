@@ -2,26 +2,23 @@
 
 **Phase:** production prototype. **Architecture:** approved v0.2. **Latest delivery:** real authentication, all feature APIs, and a distinct product redesign are complete. Runtime mocks and mock mode are removed. Lint, typecheck, tests, production build, and scripted HTTP smoke checks pass. Desktop and key 390px screens were verified with headless Chrome.
 
-## Current outcome
+## Current state
 
-Make the overall application workflow visible and usable with coherent mock data before backend feature development. Keep the same screens and feature interfaces as real API connections replace mocks incrementally.
+All discussed areas are API-connected. Runtime mocks and mock mode no longer exist.
 
-| UI area | Target coverage | Current evidence |
+| UI area | State | Evidence |
 | --- | --- | --- |
-| Account and candidate | Signup/login/logout, onboarding, profile, candidate workspace | Mock: demo account entry/end-session, candidate onboarding progression, profile editing, and `/candidate` workspace. Real auth/API remains planned |
-| Staff and supervision | Employee CRUD, teams, supervisor dashboard, assignment views | Mock: `/staff` now includes workload overview, candidate directory, team directory, supervisor assignment modal, and simulated team-member creation. Real auth/API remains planned |
-| Jobs and applications | Jobs CRUD, manual application updates, candidate status visibility | Mock: candidate jobs/application routes and staff application pipeline share agency-scoped records and status updates. Real API remains planned |
-| Remaining areas | Platform shell and discussed discovery/integration/reporting/notification previews | Mock: `/platform` includes overview, agencies, integrations, and audit tabs. Real API remains planned |
+| Account and candidate | API-connected | Real login/register/demo auth, onboarding order, profile, documents, jobs, applications |
+| Staff and supervision | API-connected | Agency-scoped candidate directory, assignment/stage updates, team management, supervisor tools |
+| Jobs and applications | API-connected | Job publishing/editing, candidate apply, staff status updates, shared pipeline |
+| Platform | API-connected | Overview, agencies with status updates, simulated integrations, audit log |
 
-The proposed cross-role demonstration is candidate onboarding → supervisor review/assignment → staff job/application update → candidate sees the change. Displayed approval states and capabilities are provisional until reviewed; mock UI must not silently finalize backend permission policy.
+Manual acceptance steps are in `../backend/docs/MANUAL_TESTING.md`; system diagrams are in `../backend/docs/FLOWS.md`.
 
-## Mock behavior
+## Historical implementation notes
 
-Use shared mock records and state transitions across screens. Create/edit/delete actions must update dependent views through the feature API boundary and Query invalidation. Include useful populated, empty, loading, error, and success states. Label external-service previews as not connected.
+The sections below record the UI-first build in order. They describe earlier mock states and are retained as history, not current guidance. The current state is the API-connected table above.
 
-During implementation, maintain each area's status here: planned, mock, API-connected, or blocked. Name the latest task and relevant contract. Never mark a feature API-connected before its workflow and obsolete mock references have been checked.
-
-Backend integration starts with real authentication. Never send mock-only IDs to real endpoints or let a mock role switcher impersonate a real API user.
 
 ## T00 baseline (historical)
 
