@@ -27,6 +27,7 @@ import {
   IconHome,
   IconKey,
   IconLayers,
+  IconLink,
   IconLogout,
   IconMenu,
   IconSearch,
@@ -69,6 +70,7 @@ const navigation: Record<Workspace, NavItem[]> = {
     { href: "/staff/team", label: "Team", icon: IconUser },
     { href: "/staff/jobs", label: "Jobs", icon: IconBriefcase },
     { href: "/staff/applications", label: "Applications", icon: IconLayers },
+    { href: "/staff/referrals", label: "Referrals", icon: IconLink },
   ],
   platform: [
     {

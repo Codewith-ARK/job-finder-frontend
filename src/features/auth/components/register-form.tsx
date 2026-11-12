@@ -8,7 +8,13 @@ import { ActionButton } from "@/components/ui/action-button";
 import { apiErrorMessage } from "@/lib/http.client";
 import { useRegister } from "../auth.hooks";
 
-export function RegisterForm() {
+export function RegisterForm({
+  referralToken,
+  referral,
+}: {
+  referralToken?: string;
+  referral?: { agencyName: string; referrerName: string };
+}) {
   const router = useRouter();
   const register = useRegister();
   const [name, setName] = useState("");
@@ -22,9 +28,9 @@ export function RegisterForm() {
     event.preventDefault();
     setError(undefined);
     register.mutate(
-      { name, email, password },
+      { name, email, password, referralToken },
       {
-        onSuccess: () => router.replace("/candidate"),
+        onSuccess: () => router.replace("/candidate/onboarding"),
         onError: (cause) => setError(apiErrorMessage(cause)),
       },
     );
@@ -104,8 +110,11 @@ export function RegisterForm() {
         </Link>
       </p>
       <p className="text-xs text-slate-500">
-        New candidates join the Northstar Careers agency and start with
-        onboarding.
+        {referral
+          ? `You will join ${referral.agencyName || "the agency"} and be assigned to ${
+              referral.referrerName || "your referrer"
+            } after signup.`
+          : "Independent candidates can browse every open role. You can join an agency later with a referral link."}
       </p>
     </form>
   );

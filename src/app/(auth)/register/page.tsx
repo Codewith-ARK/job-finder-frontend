@@ -8,7 +8,7 @@ export default function RegisterPage() {
   return (
     <AuthShell
       title="Create your candidate account"
-      subtitle="Start with a profile, then work through onboarding at your own pace."
+      subtitle="Create your account, then work through onboarding at your own pace."
     >
       <RegisterForm />
     </AuthShell>

@@ -11,7 +11,6 @@ import {
   TableRow,
 } from "flowbite-react";
 import Link from "next/link";
-import { useMemo } from "react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Feedback } from "@/components/ui/feedback";
 import { PageHeader } from "@/components/ui/page-header";
@@ -21,11 +20,6 @@ import { useJobsWorkspace } from "../../jobs/jobs.hooks";
 
 export function CandidateApplications() {
   const workspace = useJobsWorkspace();
-
-  const jobsById = useMemo(
-    () => new Map((workspace.data?.jobs ?? []).map((job) => [job.id, job])),
-    [workspace.data],
-  );
 
   if (workspace.isPending) {
     return (
@@ -54,7 +48,7 @@ export function CandidateApplications() {
       <PageHeader
         eyebrow="Candidate workspace"
         title="Applications"
-        description="Every application you have submitted, with the latest status from your agency team."
+        description="Every application you have submitted, with the latest status from the team handling the role."
         actions={
           <Button color="green" as={Link} href="/candidate/jobs">
             Browse roles
@@ -85,39 +79,39 @@ export function CandidateApplications() {
               </TableRow>
             </TableHead>
             <TableBody className="divide-y">
-              {applications.map((application) => {
-                const job = jobsById.get(application.jobId);
-                return (
-                  <TableRow key={application.id}>
-                    <TableCell>
-                      <p className="font-medium text-slate-900">
-                        {job?.title ?? "Role unavailable"}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {job?.company ?? "—"}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <ApplicationStatusBadge status={application.status} />
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-slate-700">
-                        {application.nextStep || "—"}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-slate-600">
-                        {formatRelative(application.submittedAt)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-slate-600">
-                        {formatRelative(application.updatedAt)}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {applications.map((application) => (
+                <TableRow key={application.id}>
+                  <TableCell>
+                    <p className="font-medium text-slate-900">
+                      {application.jobTitle}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {application.company}
+                      {application.agencyName
+                        ? ` · via ${application.agencyName}`
+                        : ""}
+                    </p>
+                  </TableCell>
+                  <TableCell>
+                    <ApplicationStatusBadge status={application.status} />
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-slate-700">
+                      {application.nextStep || "—"}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-slate-600">
+                      {formatRelative(application.submittedAt)}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm text-slate-600">
+                      {formatRelative(application.updatedAt)}
+                    </span>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </Card>

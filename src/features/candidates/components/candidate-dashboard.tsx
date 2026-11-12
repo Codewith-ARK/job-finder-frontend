@@ -119,9 +119,9 @@ export function CandidateDashboard() {
             </h2>
             <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/65">
               {allComplete
-                ? "Your profile and documents are in order. Keep an eye on your applications or explore the roles your agency has published."
+                ? "Your profile and documents are in order. Keep an eye on your applications or explore the open roles available to you."
                 : (nextStep?.description ??
-                  "Complete the remaining onboarding steps so your team can match you with the right opportunities.")}
+                  "Complete the remaining onboarding steps so teams can match you with the right opportunities.")}
             </p>
             <div className="mt-6 flex flex-wrap gap-2.5">
               <Button
@@ -196,7 +196,9 @@ export function CandidateDashboard() {
           {
             label: "Open roles",
             value: jobs.data?.jobs.length ?? "—",
-            hint: "Published by your agency",
+            hint: data.referral
+              ? `Roles shared by ${data.referral.agencyName}`
+              : "Open to every candidate",
             icon: <IconBriefcase className="h-3.5 w-3.5" />,
           },
           {
@@ -243,7 +245,7 @@ export function CandidateDashboard() {
               <EmptyState
                 icon={<IconBriefcase className="h-5 w-5" />}
                 title="No applications yet"
-                description="Browse the roles your agency has published and apply when something fits."
+                description="Browse open roles and apply when something fits."
                 action={
                   <Button color="green" as={Link} href="/candidate/jobs">
                     Browse open roles
@@ -338,21 +340,21 @@ export function CandidateDashboard() {
               <div className="flex items-center gap-2 text-slate-600">
                 <IconBriefcase className="h-4 w-4 text-slate-400" />
                 <dt className="sr-only">Work preference</dt>
-                <dd>{data.profile.preferredWorkType || "Not set"}</dd>
+                <dd>{data.preferences?.workType || "Not set"}</dd>
               </div>
               <div className="flex items-center gap-2 text-slate-600">
                 <IconClock className="h-4 w-4 text-slate-400" />
                 <dt className="sr-only">Salary expectation</dt>
-                <dd>{data.profile.salaryExpectation || "Not set"}</dd>
+                <dd>{data.preferences?.salaryExpectation || "Not set"}</dd>
               </div>
             </dl>
             <div className="mt-5 flex flex-wrap gap-1.5">
-              {data.profile.skills.length === 0 ? (
+              {data.skills.length === 0 ? (
                 <p className="text-xs text-slate-500">
                   Add skills to improve matching.
                 </p>
               ) : (
-                data.profile.skills.map((skill) => (
+                data.skills.map((skill) => (
                   <Badge key={skill} tone="neutral">
                     {skill}
                   </Badge>
@@ -401,7 +403,7 @@ export function CandidateDashboard() {
             Open checklist
           </Button>
         </div>
-        <ol className="grid gap-px bg-slate-200 md:grid-cols-3">
+        <ol className="grid gap-px bg-slate-200 md:grid-cols-2 xl:grid-cols-4">
           {data.onboarding.map((step, index) => (
             <li key={step.id} className="bg-surface p-5">
               <div className="flex items-center justify-between gap-2">
@@ -441,8 +443,8 @@ export function CandidateDashboard() {
 
       <div className="flex items-center gap-2 text-xs text-slate-500">
         <IconSparkle className="h-4 w-4 text-emerald-700" />
-        Tip: keep your profile current — agencies see updates as soon as you
-        save them.
+        Tip: keep your profile current — the teams you apply to see updates as
+        soon as you save them.
       </div>
     </div>
   );

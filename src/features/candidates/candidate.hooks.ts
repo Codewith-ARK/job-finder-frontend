@@ -6,20 +6,23 @@ import {
   completeOnboardingStep,
   deleteCandidateDocument,
   getCandidateWorkspace,
-  updateCandidatePreferences,
-  updateCandidateProfile,
+  saveAcademicStep,
+  savePersonalStep,
+  saveProfessionalStep,
   uploadCandidateDocument,
 } from "./candidate.api.ts";
 import { candidateKeys } from "./candidate.keys.ts";
 import type {
-  CandidatePreferencesPatch,
-  CandidateProfilePatch,
+  AcademicStepInput,
   CandidateWorkspaceData,
+  PersonalStepInput,
+  ProfessionalStepInput,
 } from "./candidate.types.ts";
 
 export type CandidateAction =
-  | { type: "profile"; patch: CandidateProfilePatch }
-  | { type: "preferences"; patch: CandidatePreferencesPatch }
+  | { type: "personal"; input: PersonalStepInput }
+  | { type: "professional"; input: ProfessionalStepInput }
+  | { type: "academic"; input: AcademicStepInput }
   | { type: "step"; stepId: string }
   | { type: "upload"; file: File }
   | { type: "delete-document"; documentId: string };
@@ -36,10 +39,12 @@ export function useCandidateWorkspace() {
 
 function runCandidateAction(action: CandidateAction) {
   switch (action.type) {
-    case "profile":
-      return updateCandidateProfile(action.patch);
-    case "preferences":
-      return updateCandidatePreferences(action.patch);
+    case "personal":
+      return savePersonalStep(action.input);
+    case "professional":
+      return saveProfessionalStep(action.input);
+    case "academic":
+      return saveAcademicStep(action.input);
     case "step":
       return completeOnboardingStep(action.stepId);
     case "upload":

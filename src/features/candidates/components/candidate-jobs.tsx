@@ -50,7 +50,7 @@ export function CandidateJobs() {
   if (workspace.isPending) {
     return (
       <Feedback kind="loading" title="Loading open roles">
-        Fetching the roles published to your agency.
+        Fetching the roles available to you.
       </Feedback>
     );
   }
@@ -84,7 +84,7 @@ export function CandidateJobs() {
       <PageHeader
         eyebrow="Candidate workspace"
         title="Open roles"
-        description="Roles published by your agency. Apply once — updates appear in your applications."
+        description="Every role you can apply to right now. Apply once — updates appear in your applications."
         actions={
           <Button color="light" as={Link} href="/candidate/applications">
             My applications
@@ -125,7 +125,7 @@ export function CandidateJobs() {
       {jobs.length === 0 ? (
         <EmptyState
           title="No roles match this view"
-          description="Try a different search or work type. New roles appear here as soon as your agency publishes them."
+          description="Try a different search or work type. New roles appear here as soon as they are published."
         />
       ) : (
         <div className="grid gap-5 lg:grid-cols-2">
@@ -141,6 +141,11 @@ export function CandidateJobs() {
                     <p className="text-sm text-slate-600">
                       {job.company} · {job.location}
                     </p>
+                    {job.agencyName && (
+                      <p className="text-xs text-slate-500">
+                        via {job.agencyName}
+                      </p>
+                    )}
                   </div>
                   <FlowbiteBadge color="gray" className="w-fit shrink-0">
                     {job.workType}

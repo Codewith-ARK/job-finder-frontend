@@ -9,6 +9,7 @@ export type WorkType = "Remote" | "Hybrid" | "On-site";
 
 export interface Job {
   id: string;
+  agencyName: string;
   title: string;
   company: string;
   location: string;
@@ -23,6 +24,9 @@ export interface Job {
 export interface Application {
   id: string;
   jobId: string;
+  jobTitle: string;
+  company: string;
+  agencyName: string;
   candidateId: string;
   candidateName: string;
   status: ApplicationStatus;

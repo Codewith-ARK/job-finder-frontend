@@ -1,8 +1,9 @@
 import { httpClient } from "../../lib/http.client.ts";
 import type {
-  CandidatePreferencesPatch,
-  CandidateProfilePatch,
+  AcademicStepInput,
   CandidateWorkspaceData,
+  PersonalStepInput,
+  ProfessionalStepInput,
 } from "./candidate.types.ts";
 
 export async function getCandidateWorkspace(
@@ -17,22 +18,32 @@ export async function getCandidateWorkspace(
   return data;
 }
 
-export async function updateCandidateProfile(
-  patch: CandidateProfilePatch,
+export async function savePersonalStep(
+  input: PersonalStepInput,
 ): Promise<CandidateWorkspaceData> {
-  const { data } = await httpClient.patch<CandidateWorkspaceData>(
-    "/candidates/me/profile",
-    patch,
+  const { data } = await httpClient.put<CandidateWorkspaceData>(
+    "/candidates/me/onboarding/personal",
+    input,
   );
   return data;
 }
 
-export async function updateCandidatePreferences(
-  patch: CandidatePreferencesPatch,
+export async function saveProfessionalStep(
+  input: ProfessionalStepInput,
 ): Promise<CandidateWorkspaceData> {
-  const { data } = await httpClient.patch<CandidateWorkspaceData>(
-    "/candidates/me/preferences",
-    patch,
+  const { data } = await httpClient.put<CandidateWorkspaceData>(
+    "/candidates/me/onboarding/professional",
+    input,
+  );
+  return data;
+}
+
+export async function saveAcademicStep(
+  input: AcademicStepInput,
+): Promise<CandidateWorkspaceData> {
+  const { data } = await httpClient.put<CandidateWorkspaceData>(
+    "/candidates/me/onboarding/academic",
+    input,
   );
   return data;
 }

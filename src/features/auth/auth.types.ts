@@ -40,6 +40,7 @@ export interface RegisterInput {
   name: string;
   email: string;
   password: string;
+  referralToken?: string;
 }
 
 export interface PasswordChangeInput {
