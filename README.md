@@ -25,16 +25,18 @@ The backend must expose `/api/health` and the API routes before the workspace wi
 | Path | Purpose |
 | --- | --- |
 | `/` | Marketing overview |
-| `/login`, `/register`, `/demo` | Real login, candidate registration, seeded demo sign-in |
+| `/login`, `/register`, `/demo` | Real login, independent candidate registration, seeded demo sign-in |
+| `/join/[token]` | Single-use referral signup with agency/referrer context |
 | `/candidate` | Candidate dashboard: onboarding progress, profile snapshot, activity |
-| `/candidate/profile` | Profile and preferences editing |
-| `/candidate/onboarding` | Ordered profile → preferences → documents completion |
-| `/candidate/jobs`, `/candidate/applications` | Agency jobs, apply, and application status |
+| `/candidate/profile` | Read-only profile summary with onboarding edit links |
+| `/candidate/onboarding` | Resumable Account → Personal → Professional → Academic → Documents → Review wizard |
+| `/candidate/jobs`, `/candidate/applications` | Open roles, apply, and application status |
 | `/staff` | Staff dashboard with workload and activity |
 | `/staff/candidates` | Agency candidate directory, assignment, stage updates |
 | `/staff/team` | Team directory, member creation, role/status changes |
 | `/staff/jobs` | Job publishing and editing (supervisor) |
 | `/staff/applications` | Application pipeline and status updates |
+| `/staff/referrals` | Create, copy-once, and revoke single-use referral links |
 | `/platform` | Platform overview, agencies, integrations, audit |
 
 `/platform` is only for platform administrators; staff routes require an agency membership. Route guards are navigation only — FastAPI authorizes every request.

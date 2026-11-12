@@ -1,6 +1,6 @@
 # Frontend context
 
-**Phase:** production prototype. **Architecture:** approved v0.2. **Latest delivery:** real authentication, all feature APIs, and a distinct product redesign are complete. Runtime mocks and mock mode are removed. Lint, typecheck, tests, production build, and scripted HTTP smoke checks pass. Desktop and key 390px screens were verified with headless Chrome.
+**Phase:** production prototype. **Architecture:** approved v0.2. **Latest delivery:** F01 candidate independence, single-use agency referral links, and a resumable normalized onboarding wizard are connected. Runtime mocks and mock mode are removed. Lint, typecheck, tests, production build, and scripted HTTP smoke checks pass. Desktop and key 390px screens were verified with headless Chrome.
 
 ## Current state
 
@@ -8,7 +8,8 @@ All discussed areas are API-connected. Runtime mocks and mock mode no longer exi
 
 | UI area | State | Evidence |
 | --- | --- | --- |
-| Account and candidate | API-connected | Real login/register/demo auth, onboarding order, profile, documents, jobs, applications |
+| Account and candidate | API-connected | Real login/register/demo auth, independent or referral signup, resumable onboarding wizard, profile, documents, jobs, applications |
+| Referrals | API-connected | `/join/[token]` public signup, staff create/copy-once/revoke links, expiry and status |
 | Staff and supervision | API-connected | Agency-scoped candidate directory, assignment/stage updates, team management, supervisor tools |
 | Jobs and applications | API-connected | Job publishing/editing, candidate apply, staff status updates, shared pipeline |
 | Platform | API-connected | Overview, agencies with status updates, simulated integrations, audit log |
@@ -88,3 +89,37 @@ Next scoped task: T03 workflow review and contracts. Review the complete mock wo
 - **Screens:** login, register, demo chooser, marketing home, and all workspace pages share the same typography, surfaces, badges, buttons, and motion. Marketing includes a live HTML product preview.
 - **Verified visually:** headless Chrome at 1440px for login, demo, marketing, candidate overview/onboarding/profile/jobs/applications, staff overview/candidates/team/jobs/applications, platform overview, and the command palette; 390px for login and candidate overview. Mobile drawer, demo cards, and palette checked.
 - **Checks:** `pnpm lint`, `pnpm typecheck`, `pnpm test` (4 passing), and `pnpm build` pass after the redesign. Manual end-to-end flows are documented in `../backend/docs/MANUAL_TESTING.md`.
+
+## F01 implementation and validation — 12 November 2026
+
+- **Signup:** `/register` creates an independent candidate (no agency) and redirects to
+  `/candidate/onboarding`. `/join/[token]` resolves a referral without consuming it, shows the
+  agency/referrer, and reuses the same registration form with the referral token. Invalid, used,
+  expired, or revoked links explain the failure and offer the independent signup path.
+- **Resumable wizard:** `candidate-onboarding.tsx` implements Account → Personal → Professional →
+  Academic → Documents → Review. Saved steps come from `GET /candidates/me`; each step is saved
+  with its `PUT` endpoint and completed in order. A locked step stays read-only until the previous
+  step is complete.
+- **Local drafts:** `candidate.store.ts` is a Zustand `persist` store keyed by candidate user id.
+  `onboarding-draft.ts` merges server-complete steps over the local draft, so saved data wins and
+  only in-progress edits are restored. Passwords and uploaded files are never persisted.
+- **Validation:** `stepIssues()` mirrors the server's minimum fields and date rules before a save
+  request; the API remains authoritative and returns `409` for out-of-order completion.
+- **Documents and review:** upload, download, delete with confirmation, and a review summary that
+  distinguishes saved server data from unsaved local edits. Finishing requires at least one
+  document and sets the profile to 100%.
+- **Gate and profile:** `candidate/layout.tsx` plus `candidate-gate.tsx` redirect incomplete
+  candidates to onboarding (navigation only; FastAPI still authorizes). `candidate-profile.tsx`
+  is a read-only summary with onboarding edit links and normalized experience/education/skills.
+- **Referrals UI:** `features/referrals/` owns types, API, keys, and hooks. The staff **Referrals**
+  page creates links with a label and expiry, shows the full link once for copying, lists status,
+  and revokes with confirmation. Employees see their own links; supervisors see the active agency.
+- **Jobs and applications:** independent candidates see all open roles; referred candidates see
+  their agency's roles. Application rows use the job context fields (`jobTitle`, `company`,
+  `agencyName`) returned by the API.
+- **Verified:** `pnpm lint` clean; `pnpm typecheck` clean; `pnpm test` → 7 passed (draft merge,
+  conversions, validation); `pnpm build` → 19 routes including `/join/[token]` and
+  `/staff/referrals`. End-to-end HTTP smoke across both signup paths and referral management →
+  34/34 checks.
+- **Limit:** automated checks and the API smoke passed; the new referral and wizard screens have
+  not been re-screenshotted with headless Chrome since the F01 changes.
